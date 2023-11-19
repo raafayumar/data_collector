@@ -9,7 +9,6 @@
 
 from initializer import initialize_details, file_constructor
 import os
-import time
 import threading
 
 file_extension = 'jpeg'
@@ -21,9 +20,8 @@ path_sensor_1 = initialize_details(sensor_1)
 path_sensor_2 = initialize_details(sensor_2)
 
 
-def ir_data():
+def capture_data_sensor_1():
     frame_count = 0
-    t = time.time()  # set timer
 
     while True:
         # get the constructed file name, with lux values
@@ -37,16 +35,12 @@ def ir_data():
 
         # Add data capturing and saving code for sensor 1 here
 
-        if time.time() - t >= 5:
-            print(time.time() - t)
-            exit()
 
-
-ir_thread = threading.Thread(target=ir_data)
+ir_thread = threading.Thread(target=capture_data_sensor_1)
 ir_thread.start()
 
 
-def rgb_data():
+def capture_data_sensor_2():
     frame_count = 0
 
     while True:
@@ -61,5 +55,5 @@ def rgb_data():
         # Add data capturing and saving code for sensor 2 here
 
 
-rgb_thread = threading.Thread(target=rgb_data)
+rgb_thread = threading.Thread(target=capture_data_sensor_2)
 rgb_thread.start()
