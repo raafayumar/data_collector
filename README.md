@@ -6,13 +6,15 @@ This Python module facilitates data collection from multiple sensors concurrentl
 Folder Structure
 
 Ensure your project follows the following structure:
-
+```bash
 project_folder
 │
 ├── initializer.py
-                │
-                └── your_code.py
-
+│
+└── for_2_sensor.py
+│
+└── data_collector.py
+```
 ## Getting Started
 
 1. **Import the Module:**
