@@ -1,11 +1,14 @@
-# data_collector
-Data Collection Module
+# Data-collector
 
-This Python module facilitates data collection from multiple sensors concurrently. It includes functionality for initializing task and sensor information, constructing file names, and collecting data from different sensors in separate threads.
+## Overview
 
-Folder Structure
+This project is dedicated to generating a large dataset for in-cabin sensing of the driver and occupants, with the ultimate goal of developing a Driver Monitoring System (DMS). The project employs a structured format for capturing and storing data, promoting efficient data management and seamless integration with in-cabin sensing systems.
+
+## Folder Structure
 
 Ensure your project follows the following structure:
+
+
 ```bash
 project_folder
 │
@@ -45,18 +48,39 @@ project_folder
 
    Example:
    ```python
-   name_sensor_1 = file_constructor()
+   file_name_sensor_1 = file_constructor()
+   file_name_sensor_2 = file_constructor()
     ```
-   - name_sensor_1: The constructed file name for sensor 1.
+   - file_name_sensor_1: The constructed file name for sensor 1.
+   - file_name_sensor_2: The constructed file name for sensor 2.
 
 ## Example Usage
 
 Refer to the example code in 'data_collector.py' for a sample implementation of data collection from two different sensors using separate threads.
 
-Notes
+## Project Goals
 
-- Customize the code for specific sensors and data-capturing methods.
-- Ensure the proper folder structure is maintained for data storage.
+1. **Efficient Data Management:**
+   - The structured format for capturing and storing data enhances organization and ease of access during data analysis and model development.
+
+2. **Seamless Integration:**
+   - The `initializer` module facilitates seamless integration with in-cabin sensing systems, ensuring a standardized approach to data collection across different sensors.
+
+3. **Driver Monitoring System (DMS) Development:**
+   - The generated dataset serves as a valuable resource for developing and training a Driver Monitoring System (DMS) to enhance driver and occupant safety.
+
+
+## Notes
+
+- **Data Capturing and Saving:**
+  - Ensure that the actual data capturing and saving code is added to the appropriate sections of your scripts. The provided scripts include placeholders indicating where the data capturing and saving code should be incorporated.
+
+- **User Input Validation:**
+  - Validate user input to ensure it meets the expected format or criteria. This is essential for maintaining the integrity of the collected data and preventing potential errors.
+
+- **Modular and Reusable Design:**
+  - The `initializer` module encourages a modular and reusable approach, making it adaptable to different project requirements and sensors. Feel free to customize and extend the module to suit specific use cases within your project.
+
 
 Author
 
