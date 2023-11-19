@@ -25,19 +25,22 @@ device_config.depth_mode = pykinect.K4A_DEPTH_MODE_PASSIVE_IR
 
 # Start device
 device = pykinect.start_device(config=device_config)
+sensor_1 = input('Enter sensor 1 name: ')
+sensor_2 = input('Enter sensor 2 name: ')
+
+path_sensor_1 = initialize_details(sensor_1)
+path_sensor_2 = initialize_details(sensor_2)
 
 
 def ir_data():
     frame_count = 0
-    print("Enter details for IR")
-    task_info, user_info = initialize_details()
     cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
     t = time.time()  # set timer
 
     while True:
         # get the constructed file name, with lux values
-        path = file_constructor()
-
+        name = file_constructor()
+        path = os.path.join(path_sensor_1, name)
         # construct the final file name
         file_name = f'{path}_{frame_count:07d}.{file_extension}'
         data = os.path.join(path, file_name)
@@ -67,13 +70,11 @@ ir_thread.start()
 
 def rgb_data():
     frame_count = 0
-    print("Enter details for RGB")
-    task_info, user_info = initialize_details()
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
     while True:
         # get the constructed file name, with lux values
-        path = file_constructor()
-
+        name = file_constructor()
+        path = os.path.join(path_sensor_2, name)
         # construct the final file name
         file_name = f'{path}_{frame_count:07d}.{file_extension}'
         data = os.path.join(path, file_name)
