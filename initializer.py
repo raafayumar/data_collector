@@ -53,6 +53,7 @@ import os
 import datetime
 import json
 import threading
+import time
 
 load_previous = ''
 task_choice = ''
@@ -64,7 +65,7 @@ os.makedirs(os.path.join(current_path, 'configs'), exist_ok=True)
 def getLux():
     global lux_values
     UDP_IP = "0.0.0.0"
-    UDP_PORT = 12345
+    UDP_PORT = 9876
 
     # UDP setup
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -195,8 +196,10 @@ def initialize_details(sensor_name=None):
 
 
 def file_constructor():
+    t = str(time.time())
+    time_stamp = t.replace('.', '-')
     # Construct file name using user information and lux value
-    file_name = (f'{user_configuration["name"][:2]}_{user_configuration["contact_number"][-4:]}'
+    file_name = (f'{time_stamp}_{user_configuration["name"][:2]}_{user_configuration["contact_number"][-4:]}'
                  f'_{user_configuration["location"]}_{user_configuration["gender"]}_{user_configuration["age"]}'
                  f'_{user_configuration["spectacles"]}_{lux_values:04d}_{user_configuration["traffic"]}'
                  f'_{user_configuration["run"]:02d}')
