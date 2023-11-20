@@ -201,7 +201,7 @@ def file_constructor():
     # Construct file name using user information and lux value
     file_name = (f'{time_stamp}_{user_configuration["name"][:2]}_{user_configuration["contact_number"][-4:]}'
                  f'_{user_configuration["location"]}_{user_configuration["gender"]}_{user_configuration["age"]}'
-                 f'_{user_configuration["spectacles"]}_{lux_values:04d}_{user_configuration["traffic"]}'
+                 f'_{user_configuration["spectacles"]}_{lux_values:05d}_{user_configuration["traffic"]}'
                  f'_{user_configuration["run"]:02d}')
 
     return file_name
