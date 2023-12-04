@@ -74,5 +74,5 @@ def azure_data():
             exit()
 
 
-ir_thread = threading.Thread(target=azure_data)
-ir_thread.start()
+rgb_thread = threading.Thread(target=azure_data)
+rgb_thread.start()
