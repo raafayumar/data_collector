@@ -36,8 +36,8 @@ def capture_data_sensor_1():
         # Add data capturing and saving code for sensor 1 here
 
 
-ir_thread = threading.Thread(target=capture_data_sensor_1)
-ir_thread.start()
+thread_1 = threading.Thread(target=capture_data_sensor_1)
+thread_1.start()
 
 
 def capture_data_sensor_2():
@@ -55,5 +55,5 @@ def capture_data_sensor_2():
         # Add data capturing and saving code for sensor 2 here
 
 
-rgb_thread = threading.Thread(target=capture_data_sensor_2)
-rgb_thread.start()
+thread_2 = threading.Thread(target=capture_data_sensor_2)
+thread_2.start()
