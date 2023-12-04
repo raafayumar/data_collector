@@ -19,7 +19,7 @@ arr = []
 
 frame_count = 0
 file_extension = 'npy'
-t = time.time()  # set timer
+start_time = time.time()  # set timer
 
 while True:
     # get the constructed file name, with lux values
@@ -34,7 +34,9 @@ while True:
     time.sleep(0.02)  # can remove this in actual code
 
     # stop the code after 5 secs
-    if time.time() - t >= 5:
-        print(time.time() - t)
+    if time.time() - start_time >= 5:
+        fps = frame_count / (time.time() - start_time)
+        print(time.time() - start_time)
+        print(f'FPS: {fps}')
         exit()
 

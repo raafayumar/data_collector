@@ -65,7 +65,7 @@ os.makedirs(os.path.join(current_path, 'configs'), exist_ok=True)
 def getLux():
     global lux_values
     UDP_IP = "0.0.0.0"
-    UDP_PORT = 9876
+    UDP_PORT = 12345
 
     # UDP setup
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

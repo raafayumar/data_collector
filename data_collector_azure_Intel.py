@@ -44,7 +44,7 @@ def azure_data():
     frame_count = 0
     cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
-    t = time.time()  # set timer
+    start_time = time.time()  # set timer
 
     while True:
 
@@ -78,13 +78,17 @@ def azure_data():
 
         cv2.imshow('Infrared Image', ir_image)
         cv2.imshow('RGB Image', rgb_image)
-        cv2.waitKey(1)
         cv2.imwrite(data_i, ir_image)
         cv2.imwrite(data_r, rgb_image)
 
+        if cv2.waitKey(1) == ord('q'):
+            break
+
         # Stop after 10 sec
-        if time.time() - t >= 10:
-            print(time.time() - t)
+        if time.time() - start_time >= 10:
+            fps = frame_count/(time.time() - start_time)
+            print(time.time() - start_time)
+            print(f'FPS: {fps}')
             exit()
 
 
@@ -95,7 +99,7 @@ ir_thread.start()
 def intel_data():
     frame_count = 0
     cv2.namedWindow('INTEL Image', cv2.WINDOW_NORMAL)
-    t = time.time()  # set timer
+    start_time = time.time()  # set timer
 
     while True:
         ret, intel = cam.read()
@@ -106,21 +110,24 @@ def intel_data():
         # get the constructed file name, with lux values for Intel camera.
         name = file_constructor()
         path = os.path.join(path_intel, name)
+
         # construct the final file name
         file_name = f'{path}_{frame_count:07d}.{file_extension}'
         data = os.path.join(path, file_name)
-
         frame_count += 1
-
         print(data)
 
         cv2.imshow('INTEL Image', intel)
-        cv2.waitKey(1)
         cv2.imwrite(data, intel)
 
-        if time.time() - t >= 5:
-            print(time.time() - t)
-            quit()
+        if time.time() - start_time >= 5:
+            fps = frame_count/(time.time() - start_time)
+            print(time.time() - start_time)
+            print(f'FPS: {fps}')
+            exit()
+
+        if cv2.waitKey(1) == ord('q'):
+            break
 
 
 rgb_thread = threading.Thread(target=intel_data)
