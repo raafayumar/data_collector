@@ -10,6 +10,7 @@
 """
 
 from initializer import initialize_details, file_constructor
+from test_annotator import ImageAnnotator
 import os
 import time
 import pykinect_azure as pykinect
@@ -32,6 +33,25 @@ device = pykinect.start_device(config=device_config)
 sensor_1 = 'azure_rgb'
 
 path_rgb = initialize_details(sensor_1)
+
+# Replace with your actual class labels
+class_names = ['CLASS1', 'CLASS2', 'CLASS3']
+
+# create an object of ImageAnnotator class
+annotator = ImageAnnotator()
+annotator.set_class_names(class_names)
+
+# Get the RGB image
+capture = device.update()
+ret_rgb, rgb_image = capture.get_color_image()
+
+if not ret_rgb:
+    print('ret no')
+    pass
+
+# Annotate the frame using the annotator module
+annotator.annotate_frame(rgb_image)
+annotation_string = annotator.annotation_string
 
 
 def azure_data():
@@ -56,12 +76,18 @@ def azure_data():
 
         # construct the final file name
         file_name = f'{path}_{frame_count:07d}.{file_extension}'
+        anno_file = f'{path}_{frame_count:07d}.txt'
         data = os.path.join(path, file_name)
+        anno_data = os.path.join(path, anno_file)
         frame_count += 1
         print(data)
 
         cv2.imshow('RGB Image', rgb_image)
         cv2.imwrite(data, rgb_image)
+
+        with open(anno_data, 'w') as file:
+            # Write a string to the file
+            file.write(annotation_string)
 
         if cv2.waitKey(1) == ord('q'):
             break
