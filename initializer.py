@@ -114,7 +114,9 @@ def initialize_details(sensor_name=None):
             if task_choice.lower() == 'y':
                 with open(task_and_sensor_file, 'r') as file_1:
                     task_and_sensor_info = json.load(file_1)
+
             else:
+                f1.close()
                 os.remove(task_and_sensor_file)
                 task_and_sensor_info = None
     else:
@@ -140,7 +142,7 @@ def initialize_details(sensor_name=None):
             print(f'\n\nSubject name: {user_configuration["name"]}\n'
                   f'Spectacles: {user_configuration["spectacles"]}\n')
 
-            load_previous = input('Do you want to load previous initialization details mentioned above? (yes/no):\n')
+            load_previous = input('Do you want to load previous initialization details mentioned above? (y/n):\n')
 
         if load_previous.lower() == 'y':
             with open(details_file, 'r') as file:

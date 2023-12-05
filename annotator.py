@@ -34,7 +34,8 @@ class ImageAnnotator:
         self.get_class_input()
 
     def get_class_input(self):
-        self.current_class = simpledialog.askstring('Class', 'Enter class:')
+        choices = "\n".join([f'Enter {i} for {class_name}' for i, class_name in enumerate(self.class_names)])
+        self.current_class = simpledialog.askstring('Class', choices)
         self.annotation_string = self.get_annotation_string()
         self.root.destroy()  # Close the Tkinter window after annotating
 
