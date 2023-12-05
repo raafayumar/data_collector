@@ -2,15 +2,19 @@ import os
 import re
 import cv2
 
-# Example usage:
-path_to_data = r'D:\scripts\data_collector\datafolder'
+# Convert frames to video? set this to 1 if yes.
+frame_to_video = 0
+output_video_path = 'output_video.mp4'
 
-task = ''
-selected_sensor = 'azure_rgb'
-location = 'cc'
+# Example usage:
+path_to_data = r'datafolder'
+
+task = 'driver_face'
+selected_sensor = 'azure_ir'
+location = 'la'
 gender = 'm'
 age = '24'
-spectacles = 'wg'
+spectacles = 'ng'
 extension = 'jpeg'
 
 
@@ -31,7 +35,8 @@ def extract_files(path_to_data, task, selected_sensor, location, gender, age, sp
                         # Define the regex pattern based on the user's selected criteria
                         pattern = (
                             f'{timestamp_pattern}_{name_pattern}_{contact_num_pattern}_{location}_{gender}_{age}_'
-                            f'{spectacles}_{lux_values_pattern}_{traffic_pattern}_{frame_num_pattern}.{extension}')
+                            f'{spectacles}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.{extension}')
+                        # print(pattern)
 
                         # Filter files using regex pattern
                         filtered_files = [f for f in files if re.search(pattern, f)]
@@ -48,15 +53,15 @@ timestamp_pattern = r'\d+-\d+'
 name_pattern = r'[a-zA-Z]{2}'
 contact_num_pattern = r'\d{4}'
 lux_values_pattern = r'\d{5}'
+run_pattern = r'\d{2}'
 traffic_pattern = r'\d{4}-\d{4}'
 frame_num_pattern = r'\d{7}'
 
 result = extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension)
-
 print(len(result))
 
 
-def frames_to_video(frames_paths, output_path, fps=15):
+def frames_to_video(frames_paths, output_path, fps=30):
     # Read the first frame to get its size
     first_frame = cv2.imread(frames_paths[0])
     height, width, _ = first_frame.shape
@@ -75,8 +80,5 @@ def frames_to_video(frames_paths, output_path, fps=15):
     video_writer.release()
 
 
-# Specify the output path for the video
-output_video_path = 'output_video.mp4'
-
-# Call the function to convert frames to video
-frames_to_video(result, output_video_path)
+if frame_to_video:
+    frames_to_video(result, output_video_path)
