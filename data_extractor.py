@@ -2,9 +2,9 @@ import os
 import re
 import cv2
 
-# Convert frames to video? set this to 1 if yes.
-frame_to_video = 0
-output_video_path = 'output_video.mp4'
+# Convert frames to video? set this flag to 1 if yes.
+frame_to_video_flag = 0
+output_video_path = 'output_video.mp4'  # change file name.
 
 # Example usage:
 path_to_data = r'datafolder'
@@ -80,5 +80,5 @@ def frames_to_video(frames_paths, output_path, fps=30):
     video_writer.release()
 
 
-if frame_to_video:
+if frame_to_video_flag:
     frames_to_video(result, output_video_path)
