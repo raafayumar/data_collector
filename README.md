@@ -43,7 +43,7 @@ Make sure to adjust the value of `annotations_flag` based on your specific use c
 
 ## Extracting Data and Converting Frames to Videos
 
-The `data_ectractor.py` code demonstrates how to extract data and convert frames to videos using the generated dataset.
+The `data_extractor.py` code demonstrates how to extract data and convert frames to videos using the generated dataset.
 
 **Usage**
    - Set frame_to_video_flag to 1 if you want to convert frames to a video.
