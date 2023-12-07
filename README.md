@@ -22,6 +22,15 @@ project_folder
 ```
 ## Getting Started
 
+## Installation Requirements
+
+Before using this  module, make sure to install the required dependencies by running the following command:
+
+```bash
+   pip install -r requirements.txt
+```
+Additionally, please install the `Azure Kinect Sensor SDK` by following the instructions provided in the [Azure Kinect Sensor SDK](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
+
 ### Data Collection with Annotations
 
 In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
@@ -32,13 +41,7 @@ In the example code `data_collector.py`, you'll find a variable named `annotatio
 
 Make sure to adjust the value of `annotations_flag` based on your specific use case.
 
-## Installation Requirements
 
-Before using this  module, make sure to install the required dependencies by running the following command:
-
-```bash
-   pip install -r requirements.txt
-```
 
 1. **Import the Module:**
 
