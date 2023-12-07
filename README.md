@@ -14,19 +14,44 @@ project_folder
 │
 ├── initializer.py
 │
+├── annotator.py
+│
 └── for_2_sensor.py
 │
 └── data_collector.py
 ```
 ## Getting Started
 
+## Installation Requirements
+
+Before using this  module, make sure to install the required dependencies by running the following command:
+
+```bash
+   pip install -r requirements.txt
+```
+Additionally, please install the `Azure Kinect Sensor SDK` by following the instructions provided in the [Azure Kinect Sensor SDK](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
+
+### Data Collection with Annotations
+
+In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
+
+- Set `annotations_flag = 1` if you want to annotate the collected data. When this flag is set to 1, the script will use the `ImageAnnotator` module to interactively annotate frames from the sensor(s). Annotations include selecting bounding boxes and assigning class labels.
+
+- Set `annotations_flag = 0` if you want to continue data collection without annotations. In this mode, the script will solely focus on capturing data frames from the sensor(s) without any interactive annotation.
+
+Make sure to adjust the value of `annotations_flag` based on your specific use case.
+
+
+
 1. **Import the Module:**
 
-   Ensure that the initializer.py module is in the same directory as your Python script.
+   Ensure that the initializer.py and annotator.py module are in the same directory as your Python script.
 
    Example:
    ```python
    from initializer import initialize_details, file_constructor
+   from annotator import ImageAnnotator
+
     ```
 2. **Initializing Task and Sensor Information:**
 
@@ -42,7 +67,32 @@ project_folder
    - path_sensor_1: Path to the directory where data for sensor 1 will be stored.
    - path_sensor_2: Path to the directory where data for sensor 2 will be stored.
 
-4. **Constructing File Names:**
+3. **Create an Annotator Object:**
+   Create an object of the ImageAnnotator class in your script.
+   Example:
+   ```python
+   annotator = ImageAnnotator()
+   ```
+
+4. **Set Class Names:**
+   Define the class names relevant to your annotation task using the set_class_names method.
+   Example:
+   ```python
+   class_names = ['Class1', 'Class2', 'Class3']
+   annotator.set_class_names(class_names)
+   ```
+
+5. **Annotate Frames:**
+   Use the annotate_frame method to annotate each frame captured during the data collection process.
+   Example:
+   ```python
+   annotator.annotate_frame(rgb_image)
+   annotation_string = annotator.annotation_string
+   ```
+    - rgb_image: The RGB frame to be annotated.
+    - The annotation information is stored in the annotation_string attribute.
+
+7. **Constructing File Names:**
 
    Use the file_constructor function to construct file names based on user information and lux values.
 
@@ -80,6 +130,11 @@ Refer to the example code in 'data_collector.py' for a sample implementation of 
 
 - **Modular and Reusable Design:**
   - The `initializer` module encourages a modular and reusable approach, making it adaptable to different project requirements and sensors. Feel free to customize and extend the module to suit specific use cases within your project.
+
+
+## Acknowledgments
+
+This project utilizes the PyKinect SDK for interfacing with Azure sensors and capturing data seamlessly. The `pyKinectAzure` SDK was created by [Ibai Gorordo](https://github.com/ibaiGorordo).
 
 
 Author
