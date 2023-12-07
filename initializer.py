@@ -36,6 +36,8 @@
 
 3. Constructing File Names:
    Use the `file_constructor` function to construct file names based on user information and lux values.
+   this is the filename:
+    “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
 
    Example:
    file_name = file_constructor()
