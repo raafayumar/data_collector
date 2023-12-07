@@ -35,7 +35,7 @@ pykinect.initialize_libraries()
 # Modify camera configuration
 device_config = pykinect.default_configuration
 device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_OFF
-device_config.depth_mode = pykinect.K4A_DEPTH_MODE_PASSIVE_IR
+device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
 device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_30
 # Start device
 device = pykinect.start_device(config=device_config)
