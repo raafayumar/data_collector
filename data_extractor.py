@@ -17,18 +17,22 @@ import cv2
 
 # Convert frames to video? set this flag to 1 if yes.
 frame_to_video_flag = 0
-output_video_path = 'output_video.mp4'  # change file name.
 
-# Example usage:
+# change file name.
+output_video_path = 'output_video.mp4'
+
 path_to_data = r'datafolder'
 
+# Set the details of the data to be extracted, leave it empty for 'all' conditions
 task = 'driver_face'
 selected_sensor = 'azure_ir'
-location = 'la'
+location = ''
 gender = 'm'
 age = '24'
 spectacles = 'ng'
 extension = 'jpeg'
+name_pattern = ''
+run_pattern = ''
 
 
 def extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension):
@@ -63,12 +67,18 @@ def extract_files(path_to_data, task, selected_sensor, location, gender, age, sp
 
 # Pattern for regex
 timestamp_pattern = r'\d+-\d+'
-name_pattern = r'[a-zA-Z]{2}'
 contact_num_pattern = r'\d{4}'
 lux_values_pattern = r'\d{5}'
-run_pattern = r'\d{2}'
 traffic_pattern = r'\d{4}-\d{4}'
 frame_num_pattern = r'\d{7}'
+
+name_pattern = '[a-zA-Z]{2}' if not name_pattern else name_pattern
+run_pattern = r'\d{2}' if not run_pattern else run_pattern
+location = '[a-zA-Z]{2}' if not location else location
+gender = r'\d{2}' if not gender else gender
+age = r'\d{2}' if not age else age
+spectacles = '[a-zA-Z]{2}' if not spectacles else spectacles
+
 
 result = extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension)
 print(len(result))
