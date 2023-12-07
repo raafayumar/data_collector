@@ -20,7 +20,7 @@ project_folder
 │
 └── data_collector.py
 ```
-## Getting Started
+# Getting Started
 
 ## Installation Requirements
 
@@ -31,7 +31,7 @@ Before using this  module, make sure to install the required dependencies by run
 ```
 Additionally, please install the `Azure Kinect Sensor SDK` by following the instructions provided in the [Azure Kinect Sensor SDK](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
 
-### Data Collection with Annotations
+## Data Collection with Annotations
 
 In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
 
@@ -41,8 +41,14 @@ In the example code `data_collector.py`, you'll find a variable named `annotatio
 
 Make sure to adjust the value of `annotations_flag` based on your specific use case.
 
+## Extracting Data and Converting Frames to Videos
 
+The `data_ectractor.py` code demonstrates how to extract data and convert frames to videos using the generated dataset.
 
+**Usage**
+   - Set frame_to_video_flag to 1 if you want to convert frames to a video.
+   - Specify the output_video_path for the generated video.
+# Data collection
 1. **Import the Module:**
 
    Ensure that the initializer.py and annotator.py module are in the same directory as your Python script.
@@ -106,7 +112,7 @@ Make sure to adjust the value of `annotations_flag` based on your specific use c
 
 ## Example Usage
 
-Refer to the example code in 'data_collector.py' for a sample implementation of data collection from two different sensors using separate threads.
+Refer to the example code in 'data_collector_for_2_sensor.py' for a sample implementation of data collection from two different sensors using separate threads.
 
 ## Project Goals
 
