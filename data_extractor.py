@@ -1,3 +1,16 @@
+"""
+
+    This code was created by Raafay Umar on 19-11-2023.
+
+    an example code to extract data and converts frames to videos.
+
+    this is the filename:
+    “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
+
+
+"""
+
+
 import os
 import re
 import cv2

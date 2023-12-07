@@ -6,6 +6,9 @@
 
     to collect Data using Azure RGB, IR and any other RGB Camera.
 
+    this is the filename:
+    “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
+
 
 """
 
@@ -17,8 +20,8 @@ import pykinect_azure as pykinect
 import cv2
 import threading
 
-# Set this to 1 for annotations
-annotations = 0
+# Set this to 1 for annotations, if 0 the data collection continues
+annotations_flag = 0
 
 # Time in sec
 time_to_capture = 5
@@ -41,7 +44,7 @@ sensor_1 = 'azure_rgb'
 
 path_rgb = initialize_details(sensor_1)
 
-if annotations:
+if annotations_flag:
     # Replace with your actual class labels
     class_names = ['Focused', 'Distracted', 'Sleepy']
 
@@ -49,12 +52,11 @@ if annotations:
     annotator = ImageAnnotator()
     annotator.set_class_names(class_names)
 
-    # Get the RGB image
+    # Get 1 RGB image for annotation
     capture_anno = device.update()
     ret, rgb = capture_anno.get_color_image()
 
     if not ret:
-        print('ret no')
         pass
 
     # Annotate the frame using the annotator module
@@ -73,7 +75,6 @@ def azure_data():
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret_rgb:
-            print('ret no')
             pass
 
         # get the constructed file name, with lux values for Azure RGB
@@ -89,7 +90,7 @@ def azure_data():
         cv2.imshow('RGB Image', rgb_image)
         cv2.imwrite(data, rgb_image)
 
-        if annotations:
+        if annotations_flag:
             anno_file = f'{path}_{frame_count:07d}.{file_extension_annotations}'
             anno_data = os.path.join(path, anno_file)
             with open(anno_data, 'w') as file:

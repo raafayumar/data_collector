@@ -6,6 +6,9 @@
 
     to collect Data using Azure RGB, IR and any other RGB Camera.
 
+    this is the filename:
+    “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
+
 
 """
 
@@ -28,7 +31,7 @@ device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
 # Start device
 device = pykinect.start_device(config=device_config)
 
-# Initialize Intel camera
+# Initialize other RGB camera
 cam = cv2.VideoCapture(0)
 
 sensor_1 = 'azure_ir'
@@ -55,7 +58,6 @@ def azure_data():
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret or not ret_rgb:
-            print('ret no')
             pass
 
         # get the constructed file name, with lux values for Azure IR

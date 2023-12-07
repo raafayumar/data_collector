@@ -4,6 +4,9 @@
 
     an example code showing the use of 'initializer' module.
 
+    this is the filename:
+    “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
+
 
 """
 
