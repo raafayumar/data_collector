@@ -56,12 +56,68 @@ import datetime
 import json
 import threading
 import time
+import cv2
+import tkinter as tk
+from tkinter import simpledialog
 
 load_previous = ''
 task_choice = ''
 lux_values = 0
 current_path = os.getcwd()
 os.makedirs(os.path.join(current_path, 'configs'), exist_ok=True)
+
+
+class ImageAnnotator:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Image Annotator")
+
+        # Withdraw the window to avoid blocking
+        self.root.withdraw()
+
+        self.canvas = tk.Canvas(self.root)
+        self.canvas.pack()
+
+        self.class_names = None
+        self.current_class = None
+        self.bbox = None
+
+        self.is_capturing = False
+        self.frame = None
+        self.annotation_string = ''
+
+        self.canvas.bind("<Button-1>", self.on_canvas_click)
+
+    def set_class_names(self, class_names):
+        self.class_names = class_names
+
+    def annotate_frame(self, frame):
+        self.frame = frame
+        self.annotate_frame_internal()
+
+    def annotate_frame_internal(self):
+        self.bbox = cv2.selectROI('Annotation', self.frame, fromCenter=False, showCrosshair=True)
+        cv2.destroyWindow('Annotation')
+        self.get_class_input()
+
+    def get_class_input(self):
+        choices = "\n".join([f'Enter {i} for {class_name}' for i, class_name in enumerate(self.class_names)])
+        self.current_class = simpledialog.askstring('Class', choices)
+        self.annotation_string = self.get_annotation_string()
+        self.root.destroy()  # Close the Tkinter window after annotating
+
+    def get_annotation_string(self):
+        class_label = self.current_class
+        x, y, w, h = self.bbox
+        cx = (x + w / 2) / self.frame.shape[1]
+        cy = (y + h / 2) / self.frame.shape[0]
+        bw = w / self.frame.shape[1]
+        bh = h / self.frame.shape[0]
+        return f'{class_label} {cx} {cy} {bw} {bh}'
+
+    def on_canvas_click(self, event):
+        if not self.is_capturing:
+            self.annotate_frame_internal()
 
 
 def getLux():
@@ -94,11 +150,14 @@ def initialize_details(sensor_name=None):
     # Check if the sensor_name is provided and in the predefined list
     sensor_list = ['azure_ir', 'azure_depth', 'azure_rgb', 'ti_radar', 'vayyar_radar', 'thermal', 'tof_ir', 'tof_depth',
                    'intel_depth', 'intel_rgb']
+    task_list = ['seat_belt', 'hands_on_off_steering', 'gaze_detection', 'driver_face', 'driver_pose', 'driver_vitals',
+                 'occupant_vitals', 'gesture_recognition', 'occupant', 'breathing']
 
     if sensor_name is None or sensor_name not in sensor_list:
-        print("Invalid sensor name. Choose from the following options:")
-        print(sensor_list)
-        return
+        print("Invalid sensor name. Choose from the following options:\n")
+        for item in sensor_list:
+            print(item)
+        exit()
 
     # Task and Sensor Initialization.
     task_and_sensor_file = os.path.join('configs', f'{sensor_name}_config.json')
@@ -127,6 +186,12 @@ def initialize_details(sensor_name=None):
     # Create a json file for task and sensor.
     if task_and_sensor_info is None:
         task = input(f'Enter Task name for {sensor_name}:\n').lower()
+
+        if task not in task_list:
+            print("Invalid task entered. Please choose from the following options:\n")
+            for items in task_list:
+                print(items)
+            exit()
 
         task_and_sensor_info = {
             'task': task,
@@ -158,11 +223,27 @@ def initialize_details(sensor_name=None):
     # If user_configuration is None, ask for user input
     if user_configuration is None:
         location = input('Enter location: la, co, cc, pa \n').lower()
+        if location not in ['la', 'co', 'cc', 'pa']:
+            print(f'Please enter the correct location details\n')
+            location = input('Enter location: la, co, cc, pa \n').lower()
+
         name = input('Name:  \n').lower()
         age = input('Age:  \n')
+
         gender = input('Gender:  \n').lower()
+        if len(gender) > 1:
+            gender = gender[0]
+
         contact_number = input('Enter contact number:  \n')
+        if len(contact_number) < 4:
+            print('Please enter correct contact number\n')
+            contact_number = input('Enter contact number:  \n')
+
         spectacles = input('spectacles? wg, ng, sg:  \n').lower()
+        if spectacles not in ['wg', 'sg', 'ng']:
+            print('Please enter correct details\n')
+            spectacles = input('spectacles? wg, ng, sg:  \n').lower()
+
         run = int(input('Enter run number: 0x \n'))
         traffic = '0000-0000'
 
