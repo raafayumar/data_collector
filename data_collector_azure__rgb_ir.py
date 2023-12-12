@@ -18,10 +18,15 @@ import time
 import pykinect_azure as pykinect
 import cv2
 import threading
+import numpy as np
+
+# Set to 1 if rotation by 180 degree is needed.
+rotate_flag = 0
 
 # Time in sec
 time_to_capture = 5
 
+# Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -79,10 +84,26 @@ def azure_data():
         print(data_i)
         print(data_r)
 
-        cv2.imshow('Infrared Image', ir_image)
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            rgb_image = cv2.rotate(rgb_image, cv2.ROTATE_180)
+            ir_image = cv2.rotate(ir_image, cv2.ROTATE_180)
+
+        alpha = 1.5  # Contrast control
+        beta = 10  # Brightness control
+
+        # call convertScaleAbs function, just for visualisation
+        adjusted_ir = cv2.convertScaleAbs(ir_image, alpha=alpha, beta=beta)
+        cv2.imshow('IR Image', adjusted_ir)
         cv2.imshow('RGB Image', rgb_image)
-        cv2.imwrite(data_i, ir_image)
-        cv2.imwrite(data_r, rgb_image)
+
+        # check file extension and save accordingly
+        if file_extension is not 'npy':
+            cv2.imwrite(data_i, ir_image)
+            cv2.imwrite(data_r, rgb_image)
+        else:
+            np.save(data_i, ir_image)
+            np.save(data_r, rgb_image)
 
         if cv2.waitKey(1) == ord('q'):
             break

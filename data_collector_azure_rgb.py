@@ -4,7 +4,7 @@
 
     an example code showing the use of 'initializer' module
 
-    to collect Data using Azure RGB, IR and any other RGB Camera.
+    to collect Data using Azure RGB Camera.
 
     this is the filename:
     “timestamp_name_phone-number_location_gender_age_spectacles_lux_traffic_run-number_frame-number.extension”
@@ -12,13 +12,16 @@
 
 """
 
-from initializer import initialize_details, file_constructor
-from annotator import ImageAnnotator
+from initializer import initialize_details, file_constructor, ImageAnnotator
 import os
 import time
 import pykinect_azure as pykinect
 import cv2
 import threading
+import numpy as np
+
+# Set to 1 if rotation by 180 degree is needed.
+rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
@@ -26,6 +29,7 @@ annotations_flag = 0
 # Time in sec
 time_to_capture = 5
 
+# Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
 file_extension_annotations = 'txt'
 
@@ -84,19 +88,33 @@ def azure_data():
         # construct the final file name
         file_name = f'{path}_{frame_count:07d}.{file_extension}'
         data = os.path.join(path, file_name)
-        frame_count += 1
         print(data)
 
-        cv2.imshow('RGB Image', rgb_image)
-        cv2.imwrite(data, rgb_image)
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            rgb_image = cv2.rotate(rgb_image, cv2.ROTATE_180)
+
+        alpha = 1.5  # Contrast control
+        beta = 10  # Brightness control
+
+        # call convertScaleAbs function, just for visualisation
+        adjusted = cv2.convertScaleAbs(rgb_image, alpha=alpha, beta=beta)
+        cv2.imshow('RGB Image', adjusted)
+
+        # check file extension and save accordingly
+        if file_extension is not 'npy':
+            cv2.imwrite(data, rgb_image)
+        else:
+            np.save(data, rgb_image)
 
         if annotations_flag:
             anno_file = f'{path}_{frame_count:07d}.{file_extension_annotations}'
             anno_data = os.path.join(path, anno_file)
             with open(anno_data, 'w') as file:
-
                 # Write annotation data to the file
                 file.write(annotation_string)
+
+        frame_count += 1  # frame counter
 
         if cv2.waitKey(1) == ord('q'):
             break
