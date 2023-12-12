@@ -55,9 +55,7 @@ The `data_extractor.py` code demonstrates how to extract data and convert frames
 
    Example:
    ```python
-   from initializer import initialize_details, file_constructor
-   from annotator import ImageAnnotator
-
+   from initializer import initialize_details, file_constructor, ImageAnnotator
     ```
 2. **Initializing Task and Sensor Information:**
 
