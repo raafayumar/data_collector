@@ -30,7 +30,7 @@ annotations_flag = 0
 time_to_capture = 5
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'jpeg'
+file_extension = 'png'
 file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -100,8 +100,8 @@ def azure_data():
         cv2.imshow('IR Image', adjusted)
 
         # check file extension and save accordingly
-        if file_extension is not 'npy':
-            cv2.imwrite(data, ir_image)
+        if file_extension != 'npy':
+            cv2.imwrite(data, ir_image*30)
         else:
             np.save(data, ir_image)
 
