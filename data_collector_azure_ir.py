@@ -25,9 +25,7 @@ rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
-
-# Replace with your actual class labels
-class_names = ['WITH_SB', 'WITHOUT_SB']
+class_names = ['WITH_SB', 'WITHOUT_SB']  # Replace with your actual class labels
 
 # Time in sec
 time_to_capture = 10
