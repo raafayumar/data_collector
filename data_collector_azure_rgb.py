@@ -25,9 +25,10 @@ rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
+class_names = ['WITH_SB', 'WITHOUT_SB']  # Replace with your actual class labels
 
 # Time in sec
-time_to_capture = 5
+time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -45,13 +46,9 @@ device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_30
 device = pykinect.start_device(config=device_config)
 
 sensor_1 = 'azure_rgb'
-
 path_rgb = initialize_details(sensor_1)
 
 if annotations_flag:
-    # Replace with your actual class labels
-    class_names = ['Focused', 'Distracted', 'Sleepy']
-
     # create an object of ImageAnnotator class
     annotator = ImageAnnotator()
     annotator.set_class_names(class_names)
@@ -62,6 +59,10 @@ if annotations_flag:
 
     if not ret:
         pass
+
+    if rotate_flag:
+        # Rotate the frame by 180 degree
+        rgb = cv2.rotate(rgb, cv2.ROTATE_180)
 
     # Annotate the frame using the annotator module
     annotator.annotate_frame(rgb)
@@ -94,15 +95,10 @@ def azure_data():
             # Rotate the frame by 180 degree
             rgb_image = cv2.rotate(rgb_image, cv2.ROTATE_180)
 
-        alpha = 1.5  # Contrast control
-        beta = 10  # Brightness control
-
-        # call convertScaleAbs function, just for visualisation
-        adjusted = cv2.convertScaleAbs(rgb_image, alpha=alpha, beta=beta)
-        cv2.imshow('RGB Image', adjusted)
+        cv2.imshow('RGB Image', rgb_image)
 
         # check file extension and save accordingly
-        if file_extension is not 'npy':
+        if file_extension != 'npy':
             cv2.imwrite(data, rgb_image)
         else:
             np.save(data, rgb_image)
