@@ -26,11 +26,14 @@ rotate_flag = 0
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
 
+# Replace with your actual class labels
+class_names = ['WITH_SB', 'WITHOUT_SB']
+
 # Time in sec
-time_to_capture = 5
+time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'jpeg'
+file_extension = 'png'
 file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -47,10 +50,10 @@ device = pykinect.start_device(config=device_config)
 sensor_1 = 'azure_ir'
 path_ir = initialize_details(sensor_1)
 
-if annotations_flag:
-    # Replace with your actual class labels
-    class_names = ['Focused', 'Distracted', 'Sleepy']
+alpha = 0.2  # Contrast control
+beta = 0.009  # Brightness control
 
+if annotations_flag:
     # create an object of ImageAnnotator class
     annotator = ImageAnnotator()
     annotator.set_class_names(class_names)
@@ -58,12 +61,19 @@ if annotations_flag:
     # Get 1 IR frame for annotation
     capture_anno = device.update()
     ret, ir = capture_anno.get_ir_image()
+    ir = ir.astype(np.int32)
 
     if not ret:
         pass
 
+    if rotate_flag:
+        # Rotate the frame by 180 degree
+        ir = cv2.rotate(ir, cv2.ROTATE_180)
+
+    adjusted_anno = cv2.convertScaleAbs(ir, alpha=alpha, beta=beta)
+
     # Annotate the frame using the annotator module
-    annotator.annotate_frame(ir)
+    annotator.annotate_frame(adjusted_anno)
     annotation_string = annotator.annotation_string
 
 
@@ -76,6 +86,7 @@ def azure_data():
         # Get the IR image
         capture = device.update()
         ret_ir, ir_image = capture.get_ir_image()
+        ir_image = ir_image.astype(np.int32)
 
         if not ret_ir:
             pass
@@ -91,17 +102,15 @@ def azure_data():
 
         if rotate_flag:
             # Rotate the frame by 180 degree
-            rgb_image = cv2.rotate(ir_image, cv2.ROTATE_180)
-        alpha = 1.5  # Contrast control
-        beta = 10  # Brightness control
+            ir_image = cv2.rotate(ir_image, cv2.ROTATE_180)
 
         # call convertScaleAbs function, just for visualisation
         adjusted = cv2.convertScaleAbs(ir_image, alpha=alpha, beta=beta)
         cv2.imshow('IR Image', adjusted)
 
         # check file extension and save accordingly
-        if file_extension is not 'npy':
-            cv2.imwrite(data, ir_image)
+        if file_extension != 'npy':
+            cv2.imwrite(data, adjusted)
         else:
             np.save(data, ir_image)
 
