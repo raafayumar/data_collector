@@ -16,16 +16,22 @@ from initializer import initialize_details, file_constructor, ImageAnnotator
 import os
 import time
 import cv2
+import numpy as np
 
-
-file_extension = 'jpeg'
-file_extension_annotations = 'txt'
+# Set to 1 if rotation by 180 degree is needed.
+rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 1
+class_names = ['Focused', 'Distracted', 'Sleepy']  # Replace with your actual class labels
 
 # Time in sec
-time_to_capture = 5
+time_to_capture = 15
+
+# Change file_extension, to 'npy' to save raw data
+file_extension = 'jpeg'
+file_extension_annotations = 'txt'
+
 
 # Initialize other RGB camera
 cam = cv2.VideoCapture(0)
@@ -34,9 +40,6 @@ sensor_1 = 'intel_rgb'
 path_rgb = initialize_details(sensor_1)
 
 if annotations_flag:
-    # Replace with your actual class labels
-    class_names = ['Focused', 'Distracted', 'Sleepy']
-
     # create an object of ImageAnnotator class
     annotator = ImageAnnotator()
     annotator.set_class_names(class_names)
@@ -47,7 +50,11 @@ if annotations_flag:
     if not ret:
         pass
 
-    # Annotate the frame using the annotator module
+    if rotate_flag:
+        # Rotate the frame by 180 degree
+        ir = cv2.rotate(ir, cv2.ROTATE_180)
+
+        # Annotate the frame using the annotator module
     annotator.annotate_frame(ir)
     annotation_string = annotator.annotation_string
 
@@ -78,6 +85,18 @@ def intel_data():
         if cv2.waitKey(1) == ord('q'):
             break
 
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            intel = cv2.rotate(intel, cv2.ROTATE_180)
+
+        cv2.imshow('RGB Image', intel)
+
+        # check file extension and save accordingly
+        if file_extension != 'npy':
+            cv2.imwrite(data, intel)
+        else:
+            np.save(data, intel)
+
         if annotations_flag:
             anno_file = f'{path}_{frame_count:07d}.{file_extension_annotations}'
             anno_data = os.path.join(path, anno_file)
@@ -85,7 +104,7 @@ def intel_data():
 
                 # Write annotation data to the file
                 file.write(annotation_string)
-                frame_count += 1
+        frame_count += 1
 
         if time.time() - start_time >= time_to_capture:
             fps = frame_count/(time.time() - start_time)
