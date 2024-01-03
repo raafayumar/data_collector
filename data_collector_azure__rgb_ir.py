@@ -12,7 +12,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor
+from initializer import initialize_details, file_constructor, ImageAnnotator
 import os
 import time
 import pykinect_azure as pykinect
@@ -23,11 +23,16 @@ import numpy as np
 # Set to 1 if rotation by 180 degree is needed.
 rotate_flag = 0
 
+# Set this to 1 for annotations, if 0 the data collection continues
+annotations_flag = 1
+class_names = ['Focused', 'Sleepy', 'Distraction']  # Replace with your actual class labels
+
 # Time in sec
-time_to_capture = 5
+time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'jpeg'
+file_extension = 'png'
+file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
 pykinect.initialize_libraries()
@@ -45,6 +50,52 @@ sensor_2 = 'azure_rgb'
 path_ir = initialize_details(sensor_1)
 path_rgb = initialize_details(sensor_2)
 
+alpha = 0.2  # Contrast control
+beta = 10  # Brightness control
+
+if annotations_flag:
+    # create an object of ImageAnnotator class
+    annotator = ImageAnnotator()
+    annotator.set_class_names(class_names)
+
+    # Get 1 IR frame for annotation
+    capture_anno = device.update()
+    ret, ir = capture_anno.get_ir_image()
+    ir = ir.astype(np.int32)
+
+    if not ret:
+        pass
+
+    if rotate_flag:
+        # Rotate the frame by 180 degree
+        ir = cv2.rotate(ir, cv2.ROTATE_180)
+
+    adjusted_anno = cv2.convertScaleAbs(ir, alpha=alpha, beta=beta)
+
+    # Annotate the frame using the annotator module
+    annotator.annotate_frame(adjusted_anno)
+    ir_annotation_string = annotator.annotation_string
+
+if annotations_flag:
+    # create an object of ImageAnnotator class
+    annotator = ImageAnnotator()
+    annotator.set_class_names(class_names)
+
+    # Get 1 RGB image for annotation
+    capture_anno = device.update()
+    ret, rgb = capture_anno.get_color_image()
+
+    if not ret:
+        pass
+
+    if rotate_flag:
+        # Rotate the frame by 180 degree
+        rgb = cv2.rotate(rgb, cv2.ROTATE_180)
+
+    # Annotate the frame using the annotator module
+    annotator.annotate_frame(rgb)
+    rgb_annotation_string = annotator.annotation_string
+
 
 def azure_data():
     frame_count = 0
@@ -58,6 +109,8 @@ def azure_data():
 
         # Get the infrared image
         ret, ir_image = capture.get_ir_image()
+        ir_image = ir_image.astype(np.int32)
+        
         # Get RGB image
         ret_rgb, rgb_image = capture.get_color_image()
 
@@ -79,8 +132,6 @@ def azure_data():
         file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
         data_r = os.path.join(path_r, file_name_r)
 
-        frame_count += 1
-
         print(data_i)
         print(data_r)
 
@@ -89,32 +140,44 @@ def azure_data():
             rgb_image = cv2.rotate(rgb_image, cv2.ROTATE_180)
             ir_image = cv2.rotate(ir_image, cv2.ROTATE_180)
 
-        alpha = 1.5  # Contrast control
-        beta = 10  # Brightness control
-
         # call convertScaleAbs function, just for visualisation
         adjusted_ir = cv2.convertScaleAbs(ir_image, alpha=alpha, beta=beta)
         cv2.imshow('IR Image', adjusted_ir)
         cv2.imshow('RGB Image', rgb_image)
 
         # check file extension and save accordingly
-        if file_extension is not 'npy':
-            cv2.imwrite(data_i, ir_image)
+        if file_extension != 'npy':
+            cv2.imwrite(data_i, adjusted_ir)
             cv2.imwrite(data_r, rgb_image)
         else:
             np.save(data_i, ir_image)
             np.save(data_r, rgb_image)
+
+        if annotations_flag:
+            anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
+            anno_data = os.path.join(path_r, anno_file)
+            with open(anno_data, 'w') as file:
+                # Write annotation data to the file
+                file.write(rgb_annotation_string)
+
+        if annotations_flag:
+            anno_file1 = f'{path_i}_{frame_count:07d}.{file_extension_annotations}'
+            anno_data1 = os.path.join(path_i, anno_file1)
+            with open(anno_data1, 'w') as file:
+                # Write annotation data to the file
+                file.write(ir_annotation_string)
+
+        frame_count += 1  # frame counter
 
         if cv2.waitKey(1) == ord('q'):
             break
 
         # Stop after 10 sec
         if time.time() - start_time >= time_to_capture:
-            fps = frame_count/(time.time() - start_time)
+            fps = frame_count / (time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             exit()
 
 
-ir_thread = threading.Thread(target=azure_data)
-ir_thread.start()
+azure_data()
