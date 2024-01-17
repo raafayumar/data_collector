@@ -75,7 +75,7 @@ frame_num_pattern = r'\d{7}'
 name_pattern = '[a-zA-Z]{2}' if not name_pattern else name_pattern
 run_pattern = r'\d{2}' if not run_pattern else run_pattern
 location = '[a-zA-Z]{2}' if not location else location
-gender = r'\d{2}' if not gender else gender
+gender = '[a-zA-Z]{1}' if not gender else gender
 age = r'\d{2}' if not age else age
 spectacles = '[a-zA-Z]{2}' if not spectacles else spectacles
 
