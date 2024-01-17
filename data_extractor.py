@@ -36,6 +36,7 @@ run_pattern = ''
 
 
 def extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension):
+    print('Searching...')
     files_paths = []
 
     for task_folder in os.listdir(path_to_data):
