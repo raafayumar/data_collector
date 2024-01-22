@@ -17,21 +17,25 @@ import os
 import time
 import pykinect_azure as pykinect
 import cv2
-import threading
 import numpy as np
 
 # Set to 1 if rotation by 180 degree is needed.
 rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 1
-class_names = ['Focused', 'Sleepy', 'Distraction']  # Replace with your actual class labels
+annotations_flag = 0
+
+# number of bounding boxes in 1 frame.
+number_of_subjects = 2
+
+# Replace with your actual class labels
+class_names = ['With_SB', 'Without_SB']
 
 # Time in sec
 time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'png'
+file_extension = 'npy'
 file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -51,50 +55,60 @@ path_ir = initialize_details(sensor_1)
 path_rgb = initialize_details(sensor_2)
 
 alpha = 0.2  # Contrast control
-beta = 10  # Brightness control
+beta = 0.09  # Brightness control
 
 if annotations_flag:
-    # create an object of ImageAnnotator class
-    annotator = ImageAnnotator()
-    annotator.set_class_names(class_names)
+    ir_annotation_string = []
+    counter = 0
+    while counter < number_of_subjects:
+        # create an object of ImageAnnotator class
+        annotator = ImageAnnotator()
+        annotator.set_class_names(class_names)
 
-    # Get 1 IR frame for annotation
-    capture_anno = device.update()
-    ret, ir = capture_anno.get_ir_image()
-    ir = ir.astype(np.int32)
+        # Get 1 IR frame for annotation
+        capture_anno = device.update()
+        ret, ir = capture_anno.get_ir_image()
+        ir = ir.astype(np.int32)
 
-    if not ret:
-        pass
+        if not ret:
+            pass
 
-    if rotate_flag:
-        # Rotate the frame by 180 degree
-        ir = cv2.rotate(ir, cv2.ROTATE_180)
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            ir = cv2.rotate(ir, cv2.ROTATE_180)
 
-    adjusted_anno = cv2.convertScaleAbs(ir, alpha=alpha, beta=beta)
+        adjusted_anno = cv2.convertScaleAbs(ir, alpha=alpha, beta=beta)
 
-    # Annotate the frame using the annotator module
-    annotator.annotate_frame(adjusted_anno)
-    ir_annotation_string = annotator.annotation_string
+        # Annotate the frame using the annotator module
+        annotator.annotate_frame(adjusted_anno)
+        ir_annotation_string.append(annotator.annotation_string)
+        print(ir_annotation_string)
+        counter += 1
 
 if annotations_flag:
-    # create an object of ImageAnnotator class
-    annotator = ImageAnnotator()
-    annotator.set_class_names(class_names)
+    counter = 0
+    rgb_annotation_string = []
+    while counter < number_of_subjects:
+        # create an object of ImageAnnotator class
+        annotator = ImageAnnotator()
+        annotator.set_class_names(class_names)
 
-    # Get 1 RGB image for annotation
-    capture_anno = device.update()
-    ret, rgb = capture_anno.get_color_image()
+        # Get 1 RGB image for annotation
+        capture_anno = device.update()
+        ret, rgb = capture_anno.get_color_image()
 
-    if not ret:
-        pass
+        if not ret:
+            pass
 
-    if rotate_flag:
-        # Rotate the frame by 180 degree
-        rgb = cv2.rotate(rgb, cv2.ROTATE_180)
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            rgb = cv2.rotate(rgb, cv2.ROTATE_180)
 
-    # Annotate the frame using the annotator module
-    annotator.annotate_frame(rgb)
-    rgb_annotation_string = annotator.annotation_string
+        # Annotate the frame using the annotator module
+        annotator.annotate_frame(rgb)
+        rgb_annotation_string.append(annotator.annotation_string)
+        print(rgb_annotation_string)
+        counter += 1
 
 
 def azure_data():
@@ -157,15 +171,23 @@ def azure_data():
             anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
             anno_data = os.path.join(path_r, anno_file)
             with open(anno_data, 'w') as file:
-                # Write annotation data to the file
-                file.write(rgb_annotation_string)
+                if type(rgb_annotation_string) == list:
+                    for i in range(0, number_of_subjects):
+                        # Write annotation data to the file
+                        file.write(rgb_annotation_string[i] + '\n')
+                else:
+                    file.write(rgb_annotation_string)
 
         if annotations_flag:
             anno_file1 = f'{path_i}_{frame_count:07d}.{file_extension_annotations}'
             anno_data1 = os.path.join(path_i, anno_file1)
             with open(anno_data1, 'w') as file:
-                # Write annotation data to the file
-                file.write(ir_annotation_string)
+                if type(ir_annotation_string) == list:
+                    for i in range(0, number_of_subjects):
+                        # Write annotation data to the file
+                        file.write(ir_annotation_string[i] + '\n')
+                else:
+                    file.write(ir_annotation_string)
 
         frame_count += 1  # frame counter
 
