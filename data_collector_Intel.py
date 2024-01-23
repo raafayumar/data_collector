@@ -12,7 +12,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor, ImageAnnotator
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments
 import os
 import time
 import cv2
@@ -110,6 +110,8 @@ def intel_data():
             fps = frame_count/(time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')
+            comment = input('Enter Comments:')
+            add_comments(comment)
             exit()
 
 

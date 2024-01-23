@@ -59,6 +59,7 @@ import time
 import cv2
 import tkinter as tk
 from tkinter import simpledialog
+import csv
 
 load_previous = ''
 task_choice = ''
@@ -145,7 +146,7 @@ data_thread.start()
 
 
 def initialize_details(sensor_name=None):
-    global load_previous, task_choice, user_configuration
+    global load_previous, task_choice, user_configuration, task_and_sensor_info
 
     # Check if the sensor_name is provided and in the predefined list
     sensor_list = ['azure_ir', 'azure_depth', 'azure_rgb', 'ti_radar', 'vayyar_radar', 'thermal', 'tof_ir', 'tof_depth',
@@ -228,14 +229,18 @@ def initialize_details(sensor_name=None):
             location = input('Enter location: la, co, cc, pa \n').lower()
 
         name = input('Name:  \n').lower()
+
         age = input('Age:  \n')
+        if not age.isnumeric():
+            print('Please enter valid age\n')
+            age = input('Age:  \n')
 
         gender = input('Gender:  \n').lower()
         if len(gender) > 1:
             gender = gender[0]
 
         contact_number = input('Enter contact number:  \n')
-        if len(contact_number) < 4:
+        if len(contact_number) < 10 and contact_number.isnumeric():
             print('Please enter correct contact number\n')
             contact_number = input('Enter contact number:  \n')
 
@@ -290,3 +295,25 @@ def file_constructor():
                  f'_{user_configuration["run"]:02d}')
 
     return file_name
+
+
+def add_comments(content):
+
+    meta_file = f'{task_and_sensor_info["task"]}-{task_and_sensor_info["sensor"]}-{datetime.datetime.now().date()}.csv'
+    meta_path = os.path.join(current_path, 'metadata')
+    os.makedirs(meta_path, exist_ok=True)
+
+    if not os.path.exists(os.path.join(meta_path, meta_file)):
+        with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
+            csv_writer = csv.writer(meta_csv)
+            csv_writer.writerow(['Name', 'Gender', 'contact_No', 'Age', 'Run', 'Comments'])
+            csv_writer.writerow(
+                [user_configuration['name'], user_configuration['gender'], user_configuration['contact_number'],
+                 user_configuration['age'], user_configuration['run'], content])
+
+    else:
+        with open(os.path.join(meta_path, meta_file), 'a', newline='') as meta_csv:
+            csv_writer = csv.writer(meta_csv)
+            csv_writer.writerow([user_configuration['name'], user_configuration['gender'],
+                                 user_configuration['contact_number'], user_configuration['age'],
+                                 user_configuration['run'], content])

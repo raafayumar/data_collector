@@ -12,7 +12,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor, ImageAnnotator
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments
 import os
 import time
 import pykinect_azure as pykinect
@@ -32,7 +32,7 @@ number_of_subjects = 2
 class_names = ['With_SB', 'Without_SB']
 
 # Time in sec
-time_to_capture = 10
+time_to_capture = 2
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -200,6 +200,8 @@ def azure_data():
             fps = frame_count / (time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')
+            comment = input('Enter Comments:')
+            add_comments(comment)
             exit()
 
 

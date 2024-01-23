@@ -12,7 +12,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor
+from initializer import initialize_details, file_constructor, add_comments
 import os
 import time
 import pykinect_azure as pykinect
@@ -126,6 +126,8 @@ def intel_data():
             fps = frame_count/(time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')
+            comment = input('Enter Comments:')
+            add_comments(comment)
             exit()
 
         if cv2.waitKey(1) == ord('q'):

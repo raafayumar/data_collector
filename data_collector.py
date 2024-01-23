@@ -10,7 +10,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor
+from initializer import initialize_details, file_constructor, add_comments
 import os
 import numpy as np
 import time
@@ -44,5 +44,7 @@ while True:
         fps = frame_count / (time.time() - start_time)
         print(time.time() - start_time)
         print(f'FPS: {fps}')
+        comment = input('Enter Comments:')
+        add_comments(comment)
         exit()
 
