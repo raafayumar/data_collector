@@ -14,14 +14,20 @@
 import os
 import re
 import cv2
+import shutil
 
 # Convert frames to video? set this flag to 1 if yes.
 frame_to_video_flag = 0
 
+# Copy extracted files to a different folder of your choice, set flag to 1.
+copy_files_flag = 0
+
 # change file name.
 output_video_path = 'output_video.mp4'
 
-path_to_data = r'datafolder'
+# Specify the destination folder where you want to copy the files
+destination_folder = r'extracted_data'
+
 
 # Set the details of the data to be extracted, leave it empty for 'all' conditions
 task = 'driver_face'
@@ -33,6 +39,8 @@ spectacles = 'ng'
 extension = 'jpeg'
 name_pattern = ''
 run_pattern = ''
+
+path_to_data = r'datafolder'
 
 
 def extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension):
@@ -106,3 +114,23 @@ def frames_to_video(frames_paths, output_path, fps=30):
 
 if frame_to_video_flag:
     frames_to_video(result, output_video_path)
+
+
+def copy_to(files_paths, destination_folder):
+    print('Copying files...')
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
+
+    for file_path in files_paths:
+        file_name = os.path.basename(file_path)
+        destination_path = os.path.join(destination_folder, file_name)
+
+        # Copy the file to the destination folder
+        shutil.copyfile(file_path, destination_path)
+
+    print('Copy completed.')
+
+
+if copy_files_flag:
+    copy_to(result, destination_folder)
+

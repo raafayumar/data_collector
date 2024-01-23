@@ -32,7 +32,7 @@ number_of_subjects = 2
 class_names = ['With_SB', 'Without_SB']
 
 # Time in sec
-time_to_capture = 2
+time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
