@@ -24,6 +24,11 @@ project_folder
 
 ## Installation Requirements
 
+Clone this repo
+```bash
+   git clone https://github.com/raafayumar/data_collector.git
+```
+
 Before using this  module, make sure to install the required dependencies by running the following command:
 
 ```bash
