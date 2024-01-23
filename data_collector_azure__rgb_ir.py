@@ -35,7 +35,7 @@ class_names = ['With_SB', 'Without_SB']
 time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'npy'
+file_extension = 'jpeg'
 file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -52,7 +52,8 @@ sensor_1 = 'azure_ir'
 sensor_2 = 'azure_rgb'
 
 path_ir = initialize_details(sensor_1)
-path_rgb = initialize_details(sensor_2)
+path_rgb = path_ir.replace(sensor_1, sensor_2)
+os.makedirs(path_rgb, exist_ok=True)
 
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
