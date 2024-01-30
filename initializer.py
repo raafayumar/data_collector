@@ -298,22 +298,42 @@ def file_constructor():
 
 
 def add_comments(content):
-
-    meta_file = f'{task_and_sensor_info["task"]}-{task_and_sensor_info["sensor"]}-{datetime.datetime.now().date()}.csv'
+    t = str(time.time())
+    t_stamp = t.replace('.', '-')
+    meta_file = 'metadata.csv'
     meta_path = os.path.join(current_path, 'metadata')
     os.makedirs(meta_path, exist_ok=True)
 
     if not os.path.exists(os.path.join(meta_path, meta_file)):
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
-            csv_writer.writerow(['Name', 'Gender', 'contact_No', 'Age', 'Run', 'Comments'])
-            csv_writer.writerow(
-                [user_configuration['name'], user_configuration['gender'], user_configuration['contact_number'],
-                 user_configuration['age'], user_configuration['run'], content])
+            csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Comments', 'Trail_flag', 'Test_flag'])
+            csv_writer.writerow([task_and_sensor_info["task"],
+                                 task_and_sensor_info["sensor"],
+                                 datetime.datetime.now().date(),
+                                 t_stamp,
+                                 user_configuration['name'],
+                                 user_configuration['contact_number'],
+                                 user_configuration['location'],
+                                 user_configuration['gender'],
+                                 user_configuration['age'],
+                                 user_configuration['spectacles'],
+                                 user_configuration['run'],
+                                 content])
 
     else:
         with open(os.path.join(meta_path, meta_file), 'a', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
-            csv_writer.writerow([user_configuration['name'], user_configuration['gender'],
-                                 user_configuration['contact_number'], user_configuration['age'],
-                                 user_configuration['run'], content])
+            csv_writer.writerow([task_and_sensor_info["task"],
+                                 task_and_sensor_info["sensor"],
+                                 datetime.datetime.now().date(),
+                                 t_stamp,
+                                 user_configuration['name'],
+                                 user_configuration['contact_number'],
+                                 user_configuration['location'],
+                                 user_configuration['gender'],
+                                 user_configuration['age'],
+                                 user_configuration['spectacles'],
+                                 user_configuration['run'],
+                                 content])

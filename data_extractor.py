@@ -16,6 +16,9 @@ import re
 import cv2
 import shutil
 
+# Set this Flag, to delete selected files from the database.
+delete_flag = 0
+
 # Convert frames to video? set this flag to 1 if yes.
 frame_to_video_flag = 0
 
@@ -30,17 +33,19 @@ destination_folder = r'extracted_data'
 
 
 # Set the details of the data to be extracted, leave it empty for 'all' conditions
-task = 'driver_face'
-selected_sensor = 'azure_ir'
+task = ''
+selected_sensor = ''
+date_pattern = ''
 location = ''
-gender = 'm'
-age = '24'
-spectacles = 'ng'
-extension = 'jpeg'
+gender = ''
+age = ''
+spectacles = ''
+extension = ''
 name_pattern = ''
+contact_num_pattern = ''
 run_pattern = ''
 
-path_to_data = r'datafolder'
+path_to_data = r'\\incabin\incabin_data\datafolder'
 
 
 def extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension):
@@ -54,33 +59,34 @@ def extract_files(path_to_data, task, selected_sensor, location, gender, age, sp
                 # Check if selected_sensor matches the pattern
                 if re.search(rf'{selected_sensor}', sensor_folder):
                     for date_folder in os.listdir(os.path.join(path_to_data, task_folder, sensor_folder)):
-                        files = [f for f in
-                                 os.listdir(os.path.join(path_to_data, task_folder, sensor_folder, date_folder))]
-                        # Rest of your code to filter files based on user-specified criteria
+                        if re.search(rf'{date_pattern}', date_folder):
+                            files = [f for f in
+                                     os.listdir(os.path.join(path_to_data, task_folder, sensor_folder, date_folder))]
+                            # Rest of your code to filter files based on user-specified criteria
 
-                        # Define the regex pattern based on the user's selected criteria
-                        pattern = (
-                            f'{timestamp_pattern}_{name_pattern}_{contact_num_pattern}_{location}_{gender}_{age}_'
-                            f'{spectacles}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.{extension}')
-                        # print(pattern)
+                            # Define the regex pattern based on the user's selected criteria
+                            pattern = (
+                                f'{timestamp_pattern}_{name_pattern}_{contact_num_pattern}_{location}_{gender}_{age}_'
+                                f'{spectacles}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.{extension}')
+                            # print(pattern)
 
-                        # Filter files using regex pattern
-                        filtered_files = [f for f in files if re.search(pattern, f)]
-
-                        for file in filtered_files:
-                            files_paths.append(
-                                os.path.join(path_to_data, task_folder, sensor_folder, date_folder, file))
+                            # Filter files using regex pattern
+                            filtered_files = [f for f in files if re.search(pattern, f)]
+                            filtered_files.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
+                            for file in filtered_files:
+                                files_paths.append(
+                                    os.path.join(path_to_data, task_folder, sensor_folder, date_folder, file))
 
     return files_paths
 
 
 # Pattern for regex
 timestamp_pattern = r'\d+-\d+'
-contact_num_pattern = r'\d{4}'
+contact_num_pattern = r'\d{4}' if not contact_num_pattern else contact_num_pattern
 lux_values_pattern = r'\d{5}'
 traffic_pattern = r'\d{4}-\d{4}'
 frame_num_pattern = r'\d{7}'
-
+date_pattern = r'\d{4}-\d{2}-\d{2}' if not date_pattern else date_pattern
 name_pattern = '[a-zA-Z]{2}' if not name_pattern else name_pattern
 run_pattern = r'\d{2}' if not run_pattern else run_pattern
 location = '[a-zA-Z]{2}' if not location else location
@@ -88,16 +94,23 @@ gender = '[a-zA-Z]{1}' if not gender else gender
 age = r'\d{2}' if not age else age
 spectacles = '[a-zA-Z]{2}' if not spectacles else spectacles
 
-
 result = extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension)
+print(result)
 print(len(result))
+
+
+def delete_file(file_path):
+    try:
+        os.remove(file_path)
+        print(f'Deleted: {file_path}')
+    except Exception as e:
+        print(f'Error deleting {file_path}: {e}')
 
 
 def frames_to_video(frames_paths, output_path, fps=30):
     # Read the first frame to get its size
     first_frame = cv2.imread(frames_paths[0])
     height, width, _ = first_frame.shape
-
     # Define the codec and create a VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
@@ -110,10 +123,6 @@ def frames_to_video(frames_paths, output_path, fps=30):
 
     # Release the VideoWriter
     video_writer.release()
-
-
-if frame_to_video_flag:
-    frames_to_video(result, output_video_path)
 
 
 def copy_to(files_paths, destination_folder):
@@ -134,3 +143,16 @@ def copy_to(files_paths, destination_folder):
 if copy_files_flag:
     copy_to(result, destination_folder)
 
+if frame_to_video_flag:
+    frames = []
+    for files in result:
+        _, ext = os.path.splitext(files)
+        if ext != '.txt':
+            frames.append(files)
+    frames_to_video(frames, output_video_path)
+
+if delete_flag:
+    confirm_delete = input("ARE YOU SURE, WANT TO DELETE DATA?\n'yes' to confirm:")
+    if confirm_delete == 'yes':
+        for file_path in result:
+            delete_file(file_path)
