@@ -2,9 +2,8 @@ import os
 import csv
 import shutil
 import re
-from datetime import datetime
 from collections import OrderedDict  # To maintain column order
-
+from tqdm import tqdm
 
 def read_existing_timestamps(server_csv_path, timestamp_column='Timestamp'):
     existing_timestamps = set()
@@ -75,9 +74,10 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                 filtered_files = [f for f in
                                   os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
                                   if re.search(regex_pattern, f)]
-
+                print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
                 # Copy only matching files from local to server
-                for file in filtered_files:
+                for file in tqdm(filtered_files, desc="Copying files", unit="file"):
+                    # print(file)
                     local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date'], file)
                     server_file_path = os.path.join(server_date_folder, file)
                     shutil.copy(local_file_path, server_file_path)
@@ -90,9 +90,10 @@ frame_num_pattern = r'\d{7}'
 run_pattern = r'\d{2}'
 extension = ''
 # Example usage
-local_csv_path_system1 = r'F:\data_collector\metadata\metadata.csv'
+local_csv_path_system1 = r'\\cit\DATA_on_server\Raafay\metadata\metadata.csv'
 server_csv_path = r'\\incabin\incabin_data\metadata\metadata.csv'
-data_folder_path_system1 = r'F:\data_collector\datafolder'
+
+data_folder_path_system1 = r'\\cit\DATA_on_server\Raafay\datafolder'
 server_data_folder_path = r'\\incabin\incabin_data\datafolder'
 
 copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)
