@@ -31,8 +31,9 @@ def read_local_csv(local_csv_path):
 
 
 def convert_timestamp_format(timestamp_str):
+    temp = timestamp_str
     # Convert timestamp string to datetime object
-    return datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+    return temp
 
 
 def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, server_data_folder_path,
@@ -61,24 +62,37 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
 
                 # Ensure that the server directories exist
                 os.makedirs(server_date_folder, exist_ok=True)
-
+                name = row['Name']
+                ph_no = row['Contact_No']
+                name_pattern = name[:2]
+                contact_pattern = ph_no[-4:]
                 # Copy associated data files to the server's data folder using regex
                 regex_pattern = re.compile(
-                    fr"{row['Name']}_{row['Contact_No']}_{row['Location']}_{row['Spectacles']}_{row['Age']}_{row['Run']}_(\d+)_\d+.jpeg")
-                for data_file in os.listdir(data_folder_path):
-                    match = regex_pattern.match(data_file)
-                    if match:
-                        frame_number = match.group(1)
-                        new_data_file_name = f"{row['Timestamp']}_{row['Name']}_{row['Contact_No']}_{row['Location']}_{row['Gender']}_{row['Age']}_{row['Spectacles']}_{row['Run']}_{frame_number}.jpeg"
-                        local_data_file_path = os.path.join(data_folder_path, data_file)
-                        server_data_file_path = os.path.join(server_date_folder, new_data_file_name)
-                        shutil.copy(local_data_file_path, server_data_file_path)
+                    f'{timestamp_pattern}_{name_pattern}_{contact_pattern}_{row["Location"]}_{row["Gender"]}_{row["Age"]}_'
+                    f'{row["Spectacles"]}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.{extension}')
+
+                # Filter files using regex pattern
+                filtered_files = [f for f in
+                                  os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
+                                  if re.search(regex_pattern, f)]
+
+                # Copy only matching files from local to server
+                for file in filtered_files:
+                    local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date'], file)
+                    server_file_path = os.path.join(server_date_folder, file)
+                    shutil.copy(local_file_path, server_file_path)
 
 
+timestamp_pattern = r'\d+-\d+'
+lux_values_pattern = r'\d{5}'
+traffic_pattern = r'\d{4}-\d{4}'
+frame_num_pattern = r'\d{7}'
+run_pattern = r'\d{2}'
+extension = ''
 # Example usage
-local_csv_path_system1 = r'D:\data_collector\local_metadata_system1.csv'
-server_csv_path = r'D:\data_collector\server_metadata.csv'
-data_folder_path_system1 = r'D:\data_collector\datafolder_system1'
-server_data_folder_path = r'D:\data_collector\server_datafolder'
+local_csv_path_system1 = r'F:\data_collector\metadata\metadata.csv'
+server_csv_path = r'\\incabin\incabin_data\metadata\metadata.csv'
+data_folder_path_system1 = r'F:\data_collector\datafolder'
+server_data_folder_path = r'\\incabin\incabin_data\datafolder'
 
 copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)
