@@ -12,7 +12,7 @@
 
 """
 
-from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb
 import os
 import time
 import pykinect_azure as pykinect
@@ -57,6 +57,8 @@ os.makedirs(path_rgb, exist_ok=True)
 
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
+
+s_list = [sensor_1, sensor_2]
 
 if annotations_flag:
     ir_annotation_string = []
@@ -201,7 +203,7 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments(comment)
+            add_comments_ir_rgb(comment, s_list)
             exit()
 
 
