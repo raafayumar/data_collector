@@ -126,10 +126,16 @@ username = 'incabin'
 password = 'incabin@123'
 
 data_folder_path_system1 = input("Enter the absolute path of the datafolder:\n")
-local_csv_path_system1 = input("Enter the absolute path of the meta file:\n")
+local_csv_path_system1 = input("\nEnter the absolute path of the meta file:\n")
 
 # Add r prefix to handle backslashes in the paths
 data_folder_path_system1 = r'{}'.format(data_folder_path_system1)
-local_csv_path_system1 = r'{}'.format(local_csv_path_system1)
+local_csv_path_system1 = r'{}\\metadata.csv'.format(local_csv_path_system1)
 
-copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)
+try:
+    copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+input("Press Enter to exit.")
