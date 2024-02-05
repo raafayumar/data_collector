@@ -4,6 +4,20 @@ import shutil
 import re
 from collections import OrderedDict  # To maintain column order
 from tqdm import tqdm
+import subprocess  # Add this import for subprocess
+
+
+def connect_to_shared_location(shared_folder, username, password):
+    # Use subprocess to run net use command to connect to shared location
+    command = f'net use {shared_folder} /user:{username} {password}'
+    subprocess.run(command, shell=True)
+
+
+def disconnect_from_shared_location(shared_folder):
+    # Use subprocess to run net use command to disconnect from shared location
+    command = f'net use {shared_folder} /delete'
+    subprocess.run(command, shell=True)
+
 
 def read_existing_timestamps(server_csv_path, timestamp_column='Timestamp'):
     existing_timestamps = set()
@@ -37,63 +51,85 @@ def convert_timestamp_format(timestamp_str):
 
 def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, server_data_folder_path,
                         timestamp_column='Timestamp'):
-    local_data = read_local_csv(local_csv_path)
-    existing_timestamps = read_existing_timestamps(server_csv_path, timestamp_column)
+    try:
+        # Connect to shared location
+        connect_to_shared_location(shared_folder, username, password)
 
-    # Convert existing timestamps to datetime objects for comparison
-    existing_timestamps = {convert_timestamp_format(ts) for ts in existing_timestamps}
+        timestamp_pattern = r'\d+-\d+'
+        lux_values_pattern = r'\d{5}'
+        traffic_pattern = r'\d{4}-\d{4}'
+        frame_num_pattern = r'\d{7}'
 
-    unique_new_entries = [row for row in local_data if
-                          convert_timestamp_format(row[timestamp_column]) not in existing_timestamps]
+        local_data = read_local_csv(local_csv_path)
+        existing_timestamps = read_existing_timestamps(server_csv_path, timestamp_column)
 
-    if unique_new_entries:
-        with open(server_csv_path, 'a', newline='') as server_csv:
-            csv_writer = csv.DictWriter(server_csv, fieldnames=local_data[0].keys())
-            if not os.path.exists(server_csv_path):
-                csv_writer.writeheader()  # Write header only if the file is empty
-            for row in unique_new_entries:
-                csv_writer.writerow(row)
+        # Convert existing timestamps to datetime objects for comparison
+        existing_timestamps = {convert_timestamp_format(ts) for ts in existing_timestamps}
 
-                # Construct data folder path on the server based on the structure
-                server_task_folder = os.path.join(server_data_folder_path, row['Task'])
-                server_sensor_folder = os.path.join(server_task_folder, row['Sensor'])
-                server_date_folder = os.path.join(server_sensor_folder, row['Date'])
+        unique_new_entries = [row for row in local_data if
+                              convert_timestamp_format(row[timestamp_column]) not in existing_timestamps]
 
-                # Ensure that the server directories exist
-                os.makedirs(server_date_folder, exist_ok=True)
-                name = row['Name']
-                ph_no = row['Contact_No']
-                name_pattern = name[:2]
-                contact_pattern = ph_no[-4:]
-                # Copy associated data files to the server's data folder using regex
-                regex_pattern = re.compile(
-                    f'{timestamp_pattern}_{name_pattern}_{contact_pattern}_{row["Location"]}_{row["Gender"]}_{row["Age"]}_'
-                    f'{row["Spectacles"]}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.{extension}')
+        if unique_new_entries:
+            with open(server_csv_path, 'a', newline='') as server_csv:
+                csv_writer = csv.DictWriter(server_csv, fieldnames=local_data[0].keys())
+                if not os.path.exists(server_csv_path):
+                    csv_writer.writeheader()  # Write header only if the file is empty
+                for row in unique_new_entries:
+                    csv_writer.writerow(row)
 
-                # Filter files using regex pattern
-                filtered_files = [f for f in
-                                  os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
-                                  if re.search(regex_pattern, f)]
-                print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
-                # Copy only matching files from local to server
-                for file in tqdm(filtered_files, desc="Copying files", unit="file"):
-                    # print(file)
-                    local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date'], file)
-                    server_file_path = os.path.join(server_date_folder, file)
-                    shutil.copy(local_file_path, server_file_path)
+                    # Construct data folder path on the server based on the structure
+                    server_task_folder = os.path.join(server_data_folder_path, row['Task'])
+                    server_sensor_folder = os.path.join(server_task_folder, row['Sensor'])
+                    server_date_folder = os.path.join(server_sensor_folder, row['Date'])
+
+                    # Ensure that the server directories exist
+                    os.makedirs(server_date_folder, exist_ok=True)
+                    name = row['Name']
+                    ph_no = row['Contact_No']
+                    name_pattern = name[:2]
+                    contact_pattern = ph_no[-4:]
+                    run_temp = str(row['Run'])
+                    run_pattern = run_temp.zfill(2)
+
+                    # Create individual variables for each field
+                    location_pattern = re.escape(row["Location"])
+                    gender_pattern = re.escape(row["Gender"])
+                    age_pattern = re.escape(row["Age"])
+                    spectacles_pattern = re.escape(row["Spectacles"])
+
+                    # Modify the regex pattern using these variables
+                    regex_pattern = re.compile(
+                        f'{timestamp_pattern}_{name_pattern}_{contact_pattern}_{location_pattern}_{gender_pattern}_{age_pattern}_'
+                        f'{spectacles_pattern}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.+')
+                    print(regex_pattern)
+                    # Filter files using regex pattern
+                    filtered_files = [f for f in
+                                      os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
+                                      if re.search(regex_pattern, f)]
+                    print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
+                    # Copy only matching files from local to server
+                    for file in tqdm(filtered_files, desc="Copying files", unit="file"):
+                        # print(file)
+                        local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date'], file)
+                        server_file_path = os.path.join(server_date_folder, file)
+                        shutil.copy(local_file_path, server_file_path)
+    finally:
+        # Disconnect from shared location regardless of success or failure
+        disconnect_from_shared_location(shared_folder)
 
 
-timestamp_pattern = r'\d+-\d+'
-lux_values_pattern = r'\d{5}'
-traffic_pattern = r'\d{4}-\d{4}'
-frame_num_pattern = r'\d{7}'
-run_pattern = r'\d{2}'
-extension = ''
-# Example usage
-local_csv_path_system1 = r'\\cit\DATA_on_server\Raafay\metadata\metadata.csv'
-server_csv_path = r'\\incabin\incabin_data\metadata\metadata.csv'
+server_csv_path = r'\\incabin\incabin_data\main_data\metadata\metadata.csv'
+server_data_folder_path = r'\\incabin\incabin_data\main_data\datafolder'
 
-data_folder_path_system1 = r'\\cit\DATA_on_server\Raafay\datafolder'
-server_data_folder_path = r'\\incabin\incabin_data\datafolder'
+shared_folder = r'\\incabin\Incabin_DATA'
+username = 'incabin'
+password = 'incabin@123'
+
+data_folder_path_system1 = input("Enter the absolute path of the datafolder:\n")
+local_csv_path_system1 = input("Enter the absolute path of the meta file:\n")
+
+# Add r prefix to handle backslashes in the paths
+data_folder_path_system1 = r'{}'.format(data_folder_path_system1)
+local_csv_path_system1 = r'{}'.format(local_csv_path_system1)
 
 copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)
