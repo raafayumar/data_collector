@@ -6,6 +6,7 @@ from collections import OrderedDict  # To maintain column order
 from tqdm import tqdm
 import subprocess  # Add this import for subprocess
 
+current_path = os.getcwd()
 
 def connect_to_shared_location(shared_folder, username, password):
     # Use subprocess to run net use command to connect to shared location
@@ -118,19 +119,20 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
         disconnect_from_shared_location(shared_folder)
 
 
-server_csv_path = r'\\incabin\incabin_data\main_data\metadata\metadata.csv'
-server_data_folder_path = r'\\incabin\incabin_data\main_data\datafolder'
+server_csv_path = r'\\incabin\incabin_data\AutoVault\metadata\metadata.csv'
+server_data_folder_path = r'\\incabin\incabin_data\AutoVault\datafolder'
 
 shared_folder = r'\\incabin\Incabin_DATA'
 username = 'incabin'
 password = 'incabin@123'
 
-data_folder_path_system1 = input("Enter the absolute path of the datafolder:\n")
-local_csv_path_system1 = input("\nEnter the absolute path of the meta file:\n")
+data_folder_path_system1 = os.path.join(current_path, 'datafolder')
+local_csv_path_system1 = os.path.join(current_path, r'metadata\metadata.csv')
 
-# Add r prefix to handle backslashes in the paths
-data_folder_path_system1 = r'{}'.format(data_folder_path_system1)
-local_csv_path_system1 = r'{}\\metadata.csv'.format(local_csv_path_system1)
+print('local datafolder path:', data_folder_path_system1)
+print('local metadata path:', local_csv_path_system1)
+
+input("\nPress Enter to start.\n")
 
 try:
     copy_data_to_server(local_csv_path_system1, server_csv_path, data_folder_path_system1, server_data_folder_path)

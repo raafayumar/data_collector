@@ -45,7 +45,7 @@ name_pattern = ''
 contact_num_pattern = ''
 run_pattern = ''
 
-path_to_data = r'\\incabin\incabin_data\datafolder'
+path_to_data = r'\\incabin\incabin_data\AutoVault\datafolder'
 
 
 def extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension):
