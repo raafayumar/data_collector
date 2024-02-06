@@ -1,25 +1,17 @@
 # Data-collector
 
+## Important Note
+
+Before initiating any data collection, make sure to always update your local repository with the latest changes by running:
+
+```bash
+git pull origin main
+```
+
 ## Overview
 
 This project is dedicated to generating a large dataset for in-cabin sensing of the driver and occupants, with the ultimate goal of developing a Driver Monitoring System (DMS). The project employs a structured format for capturing and storing data, promoting efficient data management and seamless integration with in-cabin sensing systems.
 
-## Folder Structure
-
-Ensure your project follows the following structure:
-
-
-```bash
-project_folder
-│
-├── initializer.py
-│
-├── annotator.py
-│
-└── for_2_sensor.py
-│
-└── data_collector.py
-```
 # Getting Started
 
 ## Installation Requirements
@@ -36,31 +28,33 @@ Before using this  module, make sure to install the required dependencies by run
 ```
 Additionally, please install the `Azure Kinect Sensor SDK` by following the instructions provided in the [Azure Kinect Sensor SDK](https://github.com/microsoft/Azure-Kinect-Sensor-SDK/blob/develop/docs/usage.md)
 
-## Data Collection with Annotations
+## Ready-to-Use Scripts
 
-In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
+These scripts are pre-configured, ensuring a seamless start to your data collection without the need for additional modifications. Below, you'll find the scripts corresponding to Azure IR, RGB, and Intel cameras.
 
-- Set `annotations_flag = 1` if you want to annotate the collected data. When this flag is set to 1, the script will use the `ImageAnnotator` module to interactively annotate frames from the sensor(s). Annotations include selecting bounding boxes and assigning class labels.
+### Scripts:
 
-- Set `annotations_flag = 0` if you want to continue data collection without annotations. In this mode, the script will solely focus on capturing data frames from the sensor(s) without any interactive annotation.
+1. **Azure IR Camera:**
+   - **Script Name:** `data_collector_azure_ir.py`
 
-Make sure to adjust the value of `annotations_flag` based on your specific use case.
+2. **Azure RGB Camera:**
+   - **Script Name:** `data_collector_azure_rgb.py`
+     
+3. **Azure RGB & IR Camera:**
+   -  **Script Name:** `data_collector_azure_rgb_ir.py`
 
-## Extracting Data and Converting Frames to Videos
+4. **Intel Camera:**
+   - **Script Name:** `data_collector_Intel.py`
 
-The `data_extractor.py` code demonstrates how to extract data and convert frames to videos using the generated dataset.
 
-**Usage**
-   - Set frame_to_video_flag to 1 if you want to convert frames to a video.
-   - Specify the output_video_path for the generated video.
-# Data collection
+# How-to and Script Usage
 1. **Import the Module:**
 
    Ensure that the initializer.py and annotator.py module are in the same directory as your Python script.
 
    Example:
    ```python
-   from initializer import initialize_details, file_constructor, ImageAnnotator
+   from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments
     ```
 2. **Initializing Task and Sensor Information:**
 
@@ -101,7 +95,7 @@ The `data_extractor.py` code demonstrates how to extract data and convert frames
     - rgb_image: The RGB frame to be annotated.
     - The annotation information is stored in the annotation_string attribute.
 
-7. **Constructing File Names:**
+6. **Constructing File Names:**
 
    Use the file_constructor function to construct file names based on user information and lux values.
 
@@ -113,9 +107,54 @@ The `data_extractor.py` code demonstrates how to extract data and convert frames
    - file_name_sensor_1: The constructed file name for sensor 1.
    - file_name_sensor_2: The constructed file name for sensor 2.
 
+7. **User Comments and Metadata:**
+
+   A new function `add_comments` has been added to collect user comments at the end of each run and create a metadata CSV file. The metadata includes the following information: Task, Sensor, Date, Timestamp, Name, Contact_No, Location, Gender, Age, Spectacles, Run,   Comments, Trail_flag, Test_flag.
+
+## Data Collection with Annotations
+
+In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
+
+- Set `annotations_flag = 1` if you want to annotate the data whilst collecting. When this flag is set to 1, the script will use the `ImageAnnotator` module to interactively annotate frames from the sensor(s). Annotations include selecting bounding boxes and assigning class labels.
+
+- Set `annotations_flag = 0` if you want to continue data collection without annotations. In this mode, the script will solely focus on capturing data frames from the sensor(s) without any interactive annotation.
+
+Make sure to adjust the value of `annotations_flag` and edit the `class_names` based on your specific use case.
+
+## Data Extraction and Manipulation
+
+The `data_extractor.py` code provides options for processing data and exporting results.
+
+**Usage**
+  - Set the details of the data to be extracted, leave it empty for 'all' conditions.
+    
+  - Set frame_to_video_flag to 1 if you want to convert frames to a video.
+     - Specify the output_video_path for the generated video.
+       
+  - Set delete_flag to 1 if you want to delete selected files from the database.
+    
+  - Set copy_files_flag to 1 if you want to copy extracted files to a different folder.
+     - Specify the destination_folder where you want to copy the files.
+
+**Note:**
+Make sure to check the path of the `datafolder` to ensure accurate data extraction.   
 ## Example Usage
 
 Refer to the example code in 'data_collector_for_2_sensor.py' for a sample implementation of data collection from two different sensors using separate threads.
+
+## Data Transfer to Server
+
+To streamline the process of transferring data to the server, a convenient `data_transfer.exe` tool is provided. Follow the steps below to transfer your data seamlessly:
+
+**Usage:**
+1. Run the `data_transfer.exe` executable by double-clicking on it.
+2. When prompted, provide the absolute path for the `datafolder` and `metadata` directories on your local system.
+3. The tool will automatically transfer the data to the server, following the predefined folder structure.
+
+**Important Note:**
+Ensure that you are connected to the network named 'TP-Link_866C' or have a reliable Ethernet cable plugged in for successful data transfer.
+
+This tool simplifies the data transfer process, making it efficient and user-friendly.
 
 ## Project Goals
 
