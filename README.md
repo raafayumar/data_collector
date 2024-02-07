@@ -98,7 +98,7 @@ These scripts are pre-configured, ensuring a seamless start to your data collect
 6. **Constructing File Names:**
 
     -  Use the file_constructor function to construct file names based on user information and lux values.
-    -  Refer to this [Google Doc]([link_to_google_doc_here](https://docs.google.com/document/d/1W_o_zSktdUY45XnXvFC2Fec4VeORDSuNmJsk8lIC-UI/edit?usp=sharing)) for the naming scheme.
+    -  Refer to this [Google Doc](https://docs.google.com/document/d/1W_o_zSktdUY45XnXvFC2Fec4VeORDSuNmJsk8lIC-UI/edit?usp=sharing) for the naming scheme.
    
    Example:
    ```python
