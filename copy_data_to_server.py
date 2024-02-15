@@ -8,6 +8,7 @@ import subprocess  # Add this import for subprocess
 
 current_path = os.getcwd()
 
+
 def connect_to_shared_location(shared_folder, username, password):
     # Use subprocess to run net use command to connect to shared location
     command = f'net use {shared_folder} /user:{username} {password}'
@@ -102,12 +103,12 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                     regex_pattern = re.compile(
                         f'{timestamp_pattern}_{name_pattern}_{contact_pattern}_{location_pattern}_{gender_pattern}_{age_pattern}_'
                         f'{spectacles_pattern}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.+')
-                    print(regex_pattern)
+                    # print(regex_pattern)
                     # Filter files using regex pattern
                     filtered_files = [f for f in
                                       os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
                                       if re.search(regex_pattern, f)]
-                    print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
+                    # print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
                     # Copy only matching files from local to server
                     for file in tqdm(filtered_files, desc="Copying files", unit="file"):
                         # print(file)
