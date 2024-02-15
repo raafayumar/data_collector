@@ -17,11 +17,13 @@ This project is dedicated to generating a large dataset for in-cabin sensing of 
 ## Installation Requirements
 
 Clone this repo
+   - Choose a folder/location of choice and shift+right click on the background of the Explorer window, then click on "Open command window here" or "Open PowerShell window here". then run this command:
+     
 ```bash
    git clone https://github.com/raafayumar/data_collector.git
 ```
 
-Before using this  module, make sure to install the required dependencies by running the following command:
+Before using this module, make sure to install the required dependencies by running the following command on the same cmd window:
 
 ```bash
    pip install -r requirements.txt
