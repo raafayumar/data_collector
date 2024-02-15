@@ -97,8 +97,9 @@ These scripts are pre-configured, ensuring a seamless start to your data collect
 
 6. **Constructing File Names:**
 
-   Use the file_constructor function to construct file names based on user information and lux values.
-
+    -  Use the file_constructor function to construct file names based on user information and lux values.
+    -  Refer to this [Google Doc](https://docs.google.com/document/d/1W_o_zSktdUY45XnXvFC2Fec4VeORDSuNmJsk8lIC-UI/edit?usp=sharing) for the naming scheme.
+   
    Example:
    ```python
    file_name_sensor_1 = file_constructor()
@@ -107,7 +108,7 @@ These scripts are pre-configured, ensuring a seamless start to your data collect
    - file_name_sensor_1: The constructed file name for sensor 1.
    - file_name_sensor_2: The constructed file name for sensor 2.
 
-7. **User Comments and Metadata:**
+8. **User Comments and Metadata:**
 
    A new function `add_comments` has been added to collect user comments at the end of each run and create a metadata CSV file. The metadata includes the following information: Task, Sensor, Date, Timestamp, Name, Contact_No, Location, Gender, Age, Spectacles, Run,   Comments, Trail_flag, Test_flag.
 

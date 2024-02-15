@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 0
+rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
@@ -31,7 +31,7 @@ number_of_subjects = 2
 # Replace with your actual class labels
 class_names = ['With_SB', 'Without_SB']
 
-# Time in sec
+# Time in sec, if 0 then use 'S' to stop the code
 time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
@@ -198,7 +198,17 @@ def azure_data():
             break
 
         # Stop after 10 sec
-        if time.time() - start_time >= time_to_capture:
+        if time_to_capture != 0:
+            if time.time() - start_time >= time_to_capture:
+                fps = frame_count / (time.time() - start_time)
+                print(time.time() - start_time)
+                print(f'FPS: {fps}')
+                comment = input('Enter Comments:')
+                add_comments_ir_rgb(comment, s_list)
+                exit()
+
+        # Stop when 'S' is pressed
+        if cv2.waitKey(1) == ord('s'):
             fps = frame_count / (time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')

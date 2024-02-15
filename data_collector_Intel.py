@@ -19,14 +19,14 @@ import cv2
 import numpy as np
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 1
+rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 1
+annotations_flag = 0
 class_names = ['Focused', 'Distracted', 'Sleepy']  # Replace with your actual class labels
 
-# Time in sec
-time_to_capture = 15
+# Time in sec, if 0 then use 'S' to stop the code
+time_to_capture = 0
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -45,9 +45,9 @@ if annotations_flag:
     annotator.set_class_names(class_names)
 
     # Get 1 IR frame for annotation
-    ret, ir = cam.read()
+    r, ir = cam.read()
 
-    if not ret:
+    if not r:
         pass
 
     if rotate_flag:
@@ -79,17 +79,15 @@ def intel_data():
         data = os.path.join(path, file_name)
         print(data)
 
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            intel = cv2.rotate(intel, cv2.ROTATE_180)
+
         cv2.imshow('INTEL Image', intel)
         cv2.imwrite(data, intel)
 
         if cv2.waitKey(1) == ord('q'):
             break
-
-        if rotate_flag:
-            # Rotate the frame by 180 degree
-            intel = cv2.rotate(intel, cv2.ROTATE_180)
-
-        cv2.imshow('RGB Image', intel)
 
         # check file extension and save accordingly
         if file_extension != 'npy':
@@ -106,7 +104,16 @@ def intel_data():
                 file.write(annotation_string)
         frame_count += 1
 
-        if time.time() - start_time >= time_to_capture:
+        if time_to_capture != 0:
+            if time.time() - start_time >= time_to_capture:
+                fps = frame_count/(time.time() - start_time)
+                print(time.time() - start_time)
+                print(f'FPS: {fps}')
+                comment = input('Enter Comments:')
+                add_comments(comment)
+                exit()
+
+        if cv2.waitKey(1) == ord('s'):
             fps = frame_count/(time.time() - start_time)
             print(time.time() - start_time)
             print(f'FPS: {fps}')
