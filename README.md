@@ -17,7 +17,7 @@ This project is dedicated to generating a large dataset for in-cabin sensing of 
 ## Installation Requirements
 
 Clone this repo
-   - Open a folder/location of choice and shift+right click on the background of the Explorer window, then click on "Open command window here" or "Open PowerShell window here". then run this command:
+   - Open a folder/location of choice and Shift + Right-click on the background of the Explorer window, then click on "Open command window here" or "Open PowerShell window here". then run this command:
      
 ```bash
    git clone https://github.com/raafayumar/data_collector.git
