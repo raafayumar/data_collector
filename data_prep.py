@@ -83,7 +83,7 @@ else:
     train_test = 'Test_flag'
     data_for = 'Test'
 
-newfolder_path = os.path.join(data_directory, data_for)
+newfolder_path = os.path.join(os.path.dirname(data_directory), data_for)
 
 print('\nlocal data path: ', data_directory)
 print('local Train/Test folder path: ', newfolder_path)
