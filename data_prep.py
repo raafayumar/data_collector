@@ -3,6 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 import subprocess
 import shutil
+from datetime import datetime
 
 
 def connect_to_shared_location(shared_folder, username, password):
@@ -15,6 +16,23 @@ def disconnect_from_shared_location(shared_folder):
     # Use subprocess to run net use command to disconnect from shared location
     command = f'net use {shared_folder} /delete'
     subprocess.run(command, shell=True)
+
+
+def convert_date_format(timestamp_str):
+    try:
+        # Try parsing yyyy-mm-dd format
+        datetime.strptime(timestamp_str, '%Y-%m-%d')
+        # If successful, return the original timestamp
+        return timestamp_str
+    except ValueError:
+        try:
+            # Try parsing dd-mm-yyyy format
+            date_obj = datetime.strptime(timestamp_str, '%d-%m-%Y')
+            # If successful, return the timestamp formatted as yyyy-mm-dd
+            return date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            # If neither format matches, return None
+            return None
 
 
 def update_metadata_and_move_files(data_dir, csv_file):
@@ -33,7 +51,6 @@ def update_metadata_and_move_files(data_dir, csv_file):
             # Extract information from the file name
             file_name_parts = file.split('_')
             task, sensor, date = os.path.relpath(root, data_dir).split(os.path.sep)[-3:]
-            timestamp = file_name_parts[0]
             name = file_name_parts[1][:2]
             contact_no = file_name_parts[2][-4:]
             location = file_name_parts[3]
@@ -42,6 +59,9 @@ def update_metadata_and_move_files(data_dir, csv_file):
             spectacles = file_name_parts[6]
             run_number = int(file_name_parts[-2])
 
+            # Convert the date format if it's not already in yyyy-mm-dd format
+            date_value = convert_date_format(df['Date']) or df['Date']
+
             # Update metadata - set trail_flag to 1 for the first frame of each run
             if (
                     task, sensor, date, run_number, name, contact_no, location, gender, age,
@@ -49,7 +69,7 @@ def update_metadata_and_move_files(data_dir, csv_file):
                 run_first_frame[
                     (task, sensor, date, run_number, name, contact_no, location, gender, age, spectacles)] = True
 
-                df.loc[(df['Task'] == task) & (df['Sensor'] == sensor) & (df['Date'] == date) & (
+                df.loc[(df['Task'] == task) & (df['Sensor'] == sensor) & (date_value == date) & (
                         df['Name'].astype(str).str[:2] == name) & (
                                df['Contact_No'].astype(str).str.zfill(4).str[-4:] == contact_no) & (
                                df['Location'] == location) & (df['Gender'] == gender) & (df['Age'] == age) & (
