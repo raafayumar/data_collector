@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict  # To maintain column order
 from tqdm import tqdm
 import subprocess  # Add this import for subprocess
+from datetime import datetime
 
 current_path = os.getcwd()
 
@@ -51,6 +52,23 @@ def convert_timestamp_format(timestamp_str):
     return temp
 
 
+def convert_date_format(timestamp_str):
+    try:
+        # Try parsing yyyy-mm-dd format
+        datetime.strptime(timestamp_str, '%Y-%m-%d')
+        # If successful, return the original timestamp
+        return timestamp_str
+    except ValueError:
+        try:
+            # Try parsing dd-mm-yyyy format
+            date_obj = datetime.strptime(timestamp_str, '%d-%m-%Y')
+            # If successful, return the timestamp formatted as yyyy-mm-dd
+            return date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            # If neither format matches, return None
+            return None
+
+
 def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, server_data_folder_path,
                         timestamp_column='Timestamp'):
     try:
@@ -79,10 +97,13 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                 for row in unique_new_entries:
                     csv_writer.writerow(row)
 
+                    # Convert the date format if it's not already in yyyy-mm-dd format
+                    date_value = convert_date_format(row['Date']) or row['Date']
+
                     # Construct data folder path on the server based on the structure
                     server_task_folder = os.path.join(server_data_folder_path, row['Task'])
                     server_sensor_folder = os.path.join(server_task_folder, row['Sensor'])
-                    server_date_folder = os.path.join(server_sensor_folder, row['Date'])
+                    server_date_folder = os.path.join(server_sensor_folder, date_value)
 
                     # Ensure that the server directories exist
                     os.makedirs(server_date_folder, exist_ok=True)
@@ -103,16 +124,16 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                     regex_pattern = re.compile(
                         f'{timestamp_pattern}_{name_pattern}_{contact_pattern}_{location_pattern}_{gender_pattern}_{age_pattern}_'
                         f'{spectacles_pattern}_{lux_values_pattern}_{traffic_pattern}_{run_pattern}_{frame_num_pattern}.+')
-                    # print(regex_pattern)
+
                     # Filter files using regex pattern
                     filtered_files = [f for f in
-                                      os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))
+                                      os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], date_value))
                                       if re.search(regex_pattern, f)]
-                    # print(len(os.listdir(os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date']))))
+
                     # Copy only matching files from local to server
                     for file in tqdm(filtered_files, desc="Copying files", unit="file"):
                         # print(file)
-                        local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], row['Date'], file)
+                        local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], date_value, file)
                         server_file_path = os.path.join(server_date_folder, file)
                         shutil.copy(local_file_path, server_file_path)
     finally:
