@@ -51,7 +51,7 @@ def update_metadata_and_move_files(data_dir, csv_file):
 
                 df.loc[(df['Task'] == task) & (df['Sensor'] == sensor) & (df['Date'] == date) & (
                         df['Name'].astype(str).str[:2] == name) & (
-                               df['Contact_No'].astype(str).str[-4:] == contact_no) & (
+                               df['Contact_No'].astype(str).str.zfill(4).str[-4:] == contact_no) & (
                                df['Location'] == location) & (df['Gender'] == gender) & (df['Age'] == age) & (
                                df['Spectacles'] == spectacles) & (df['Run'] == run_number), train_test] = 1
 
