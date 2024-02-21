@@ -22,11 +22,11 @@ delete_flag = 0
 # Convert frames to video? set this flag to 1 if yes.
 frame_to_video_flag = 0
 
-# Copy extracted files to a different folder of your choice, set flag to 1.
-copy_files_flag = 0
-
 # change file name.
 output_video_path = 'output_video.mp4'
+
+# Copy extracted files to a different folder of your choice, set flag to 1.
+copy_files_flag = 1
 
 # Specify the destination folder where you want to copy the files
 destination_folder = r'extracted_data'
@@ -95,7 +95,7 @@ age = r'\d{2}' if not age else age
 spectacles = '[a-zA-Z]{2}' if not spectacles else spectacles
 
 result = extract_files(path_to_data, task, selected_sensor, location, gender, age, spectacles, extension)
-print(result)
+# print(result)
 print(len(result))
 
 
@@ -152,7 +152,7 @@ if frame_to_video_flag:
     frames_to_video(frames, output_video_path)
 
 if delete_flag:
-    confirm_delete = input("ARE YOU SURE, WANT TO DELETE DATA?\n'yes' to confirm:")
+    confirm_delete = input("ARE YOU SURE, WANT TO DELETE DATA?\n'yes' to confirm:\n")
     if confirm_delete == 'yes':
         for file_path in result:
             delete_file(file_path)
