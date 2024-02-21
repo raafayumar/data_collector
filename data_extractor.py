@@ -10,40 +10,39 @@
 
 """
 
-
 import os
 import re
 import cv2
 import shutil
+from tqdm import tqdm
 
 # Set this Flag, to delete selected files from the database.
 delete_flag = 0
 
 # Convert frames to video? set this flag to 1 if yes.
-frame_to_video_flag = 0
+frame_to_video_flag = 1
 
 # change file name.
-output_video_path = 'output_video.mp4'
+output_video_path = 'test.mp4'
 
 # Copy extracted files to a different folder of your choice, set flag to 1.
-copy_files_flag = 1
+copy_files_flag = 0
 
 # Specify the destination folder where you want to copy the files
 destination_folder = r'extracted_data'
 
-
 # Set the details of the data to be extracted, leave it empty for 'all' conditions
-task = ''
-selected_sensor = ''
-date_pattern = ''
-location = ''
-gender = ''
-age = ''
-spectacles = ''
+task = 'driver_face'
+selected_sensor = 'azure_rgb'
+date_pattern = '2024-02-13'
+location = 'cc'
+gender = 'm'
+age = '26'
+spectacles = 'ng'
 extension = ''
-name_pattern = ''
-contact_num_pattern = ''
-run_pattern = ''
+name_pattern = 'na'
+contact_num_pattern = '9806'
+run_pattern = '01'
 
 path_to_data = r'\\incabin\incabin_data\AutoVault\datafolder'
 
@@ -107,17 +106,21 @@ def delete_file(file_path):
         print(f'Error deleting {file_path}: {e}')
 
 
-def frames_to_video(frames_paths, output_path, fps=30):
+def frames_to_video(frames_paths, output_path):
     # Read the first frame to get its size
     first_frame = cv2.imread(frames_paths[0])
     height, width, _ = first_frame.shape
+    # Calculating fps from the file
+    first_fps = os.path.basename(frames_paths[0]).replace('-', '.').split('_')
+    last_fps = os.path.basename(frames_paths[-1]).replace('-', '.').split('_')
+    delta_t = float(last_fps[0]) - float(first_fps[0])
+    fps = int(len(result)/delta_t) + 1
     # Define the codec and create a VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     # Write frames to the video
-    for frame_path in frames_paths:
-        print(frame_path)
+    for frame_path in tqdm(frames_paths, desc="Creating video", unit="frames"):
         frame = cv2.imread(frame_path)
         video_writer.write(frame)
 
@@ -130,7 +133,7 @@ def copy_to(files_paths, destination_folder):
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
 
-    for file_path in files_paths:
+    for file_path in tqdm(files_paths, desc="Copying files", unit="file"):
         file_name = os.path.basename(file_path)
         destination_path = os.path.join(destination_folder, file_name)
 
@@ -141,15 +144,22 @@ def copy_to(files_paths, destination_folder):
 
 
 if copy_files_flag:
-    copy_to(result, destination_folder)
+    print('Total files found:', len(result))
+    confirm_copyfiles = input(
+        f"Do you want to copy the files to {os.path.join(os.getcwd(), destination_folder)} ?\n'yes' or 'y' to confirm:\n")
+    if confirm_copyfiles == 'yes' or confirm_copyfiles == 'YES' or confirm_copyfiles == 'y' or confirm_copyfiles == 'Y':
+        copy_to(result, destination_folder)
 
 if frame_to_video_flag:
-    frames = []
-    for files in result:
-        _, ext = os.path.splitext(files)
-        if ext != '.txt':
-            frames.append(files)
-    frames_to_video(frames, output_video_path)
+    print('Total files found:', len(result))
+    confirm_video = input(f"{os.path.join(os.getcwd(), output_video_path)} create video?\n'y' to confirm:\n")
+    if confirm_video == 'y':
+        frames = []
+        for files in result:
+            _, ext = os.path.splitext(files)
+            if ext != '.txt':
+                frames.append(files)
+        frames_to_video(frames, output_video_path)
 
 if delete_flag:
     confirm_delete = input("ARE YOU SURE, WANT TO DELETE DATA?\n'yes' to confirm:\n")
