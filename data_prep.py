@@ -60,7 +60,7 @@ def update_metadata_and_move_files(data_dir, csv_file):
             run_number = int(file_name_parts[-2])
 
             # Convert the date format if it's not already in yyyy-mm-dd format
-            date_value = convert_date_format(df['Date']) or df['Date']
+            df['Date'] = df['Date'].apply(convert_date_format)
 
             # Update metadata - set trail_flag to 1 for the first frame of each run
             if (
@@ -69,7 +69,7 @@ def update_metadata_and_move_files(data_dir, csv_file):
                 run_first_frame[
                     (task, sensor, date, run_number, name, contact_no, location, gender, age, spectacles)] = True
 
-                df.loc[(df['Task'] == task) & (df['Sensor'] == sensor) & (date_value == date) & (
+                df.loc[(df['Task'] == task) & (df['Sensor'] == sensor) & (df['Date'] == date) & (
                         df['Name'].astype(str).str[:2] == name) & (
                                df['Contact_No'].astype(str).str.zfill(4).str[-4:] == contact_no) & (
                                df['Location'] == location) & (df['Gender'] == gender) & (df['Age'] == age) & (
