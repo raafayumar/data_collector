@@ -348,7 +348,7 @@ def add_comments_ir_rgb(content, s1):
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Comments', 'Train_flag', 'Val_flag', 'Test_flag'])
             for s in s1:
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
