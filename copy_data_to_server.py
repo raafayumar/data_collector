@@ -141,10 +141,10 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
         disconnect_from_shared_location(shared_folder)
 
 
-server_csv_path = r'\\incabin\incabin_data\AutoVault\metadata\metadata.csv'
-server_data_folder_path = r'\\incabin\incabin_data\AutoVault\datafolder'
+server_csv_path = r'\\172.1.40.45\incabin_data\AutoVault\metadata\metadata.csv'
+server_data_folder_path = r'\\172.1.40.45\incabin_data\AutoVault\datafolder'
 
-shared_folder = r'\\incabin\Incabin_DATA'
+shared_folder = r'\\172.1.40.45\Incabin_DATA'
 username = 'incabin'
 password = 'incabin@123'
 
