@@ -75,7 +75,7 @@ def update_metadata_and_move_files(data_dir, csv_file):
                                df['Location'] == location) & (df['Gender'] == gender) & (df['Age'] == age) & (
                                df['Spectacles'] == spectacles) & (df['Run'] == run_number), train_test] = 1
 
-            # Move the file to the 'Train' folder
+            # Move the file to the 'Train/Val/Test' folder
             new_file_name = f"{task}_{sensor}_{date}_{file}"
             new_file_path = os.path.join(newfolder_path, new_file_name)
             os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
@@ -94,19 +94,24 @@ metadata_csv = r'\\incabin\incabin_data\AutoVault\metadata\metadata.csv'
 
 data_directory = input('Absolute path of the local datafolder: ')
 
-temp = input('\nThis data is used to? \t Press 1 or 2 \n1. Train \n2. Test\n')
+temp = input('\nThis data is used to? \t Press 1, 2 or 3\n1. Train \n2. Validation\n3. Test\n')
 
 if temp == '1':
     train_test = 'Train_flag'
     data_for = 'Train'
-else:
+
+if temp == '2':
+    train_test = 'Val_flag'
+    data_for = 'Validation'
+
+if temp == '3':
     train_test = 'Test_flag'
     data_for = 'Test'
 
 newfolder_path = os.path.join(os.path.dirname(data_directory), data_for)
 
 print('\nlocal data path: ', data_directory)
-print('local Train/Test folder path: ', newfolder_path)
+print('local Train/Val or Test folder path: ', newfolder_path)
 print('Use this data to: ', data_for)
 
 input("\nPress Enter to start.\n")
