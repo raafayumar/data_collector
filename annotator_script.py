@@ -18,6 +18,8 @@ class AnnotationTool:
         self.current_frame_index = 0
         self.metadata_filename = None
         self.metadata = None
+        self.count = 0
+        self.corrected_count = 0
 
         # Create frames
         self.cv_frame = tk.Frame(self.master)
@@ -31,7 +33,7 @@ class AnnotationTool:
 
         # Create image label
         self.image_label = tk.Label(self.cv_frame, font=label_font)
-        self.image_label.pack(expand=True)  # Expand the label to fill the frame
+        self.image_label.pack(expand=True, anchor="center")  # Expand the label to fill the frame
 
         # Create filename label
         self.filename_label = tk.Label(self.cv_frame, text="", font=label_font)
@@ -43,6 +45,9 @@ class AnnotationTool:
         # Create total frames label
         self.total_frames_label = tk.Label(self.master, text="Total Frames: 0", font=("Helvetica", 10))
         self.total_frames_label.grid(row=0, column=0, sticky="nw", padx=10, pady=10)  # Adjust grid position
+
+        self.progress_label = tk.Label(self.master, text="Current frame: 0", font=("Helvetica", 10))
+        self.progress_label.grid(row=0, column=1, sticky="nw", padx=10, pady=10)
 
         self.instructions_label = tk.Label(self.master,
                                            text="Instructions:\nPress '0' for next frame.\nPress 'c' to change class.\nClose the window to continue to the next frame or to quit (press 'q').\nPress left arrow key for previous frame.",
@@ -70,7 +75,7 @@ class AnnotationTool:
                 self.metadata_filename = os.path.join(self.frames_dir, metadata_dir,
                                                       f"{user_name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv")
                 metadata_rows = []
-                for frame_file in self.frame_files:
+                for count, frame_file in enumerate(self.frame_files):
                     annotations = self.read_annotation(
                         os.path.join(self.frames_dir, os.path.splitext(frame_file)[0] + '.txt'))
                     metadata_rows.append(
@@ -81,12 +86,14 @@ class AnnotationTool:
                 frame_path = os.path.join(self.frames_dir, self.frame_files[0])
                 annotations = self.metadata.loc[0, 'Previous Annotations']
                 self.display_image(cv2.imread(frame_path), annotations, self.frame_files[0])
+
             else:
                 messagebox.showwarning("Warning", "No frames found in the directory.")
         else:
             messagebox.showerror("Error", "Frames directory not selected.")
 
     def display_image(self, frame, annotations, filename):
+        self.count += 1
         for annotation in annotations:
             class_id = annotation[0]
             class_name = self.classes[class_id]
@@ -97,7 +104,7 @@ class AnnotationTool:
         image = Image.fromarray(frame)
         self.photo = ImageTk.PhotoImage(image)
         self.image_label.configure(image=self.photo)
-
+        self.progress_label.config(text=f"Current frame: {self.count}")
         annotation_text = '\n'.join([f"Class: {self.classes[a[0]]}, BBox: {a[1:]}" for a in annotations])
         self.annotation_label.config(text=f"Annotations: {annotation_text}\nFrame: {filename}")
 
@@ -166,6 +173,7 @@ class AnnotationTool:
         if event.char == 'q':
             self.master.quit()
         elif event.char == 'c':
+            self.corrected_count += 1
             new_class = simpledialog.askinteger("Change Class",
                                                 "Enter new class (0: FOCUSED, 1: SLEEPY, 2: DISTRACTED): ")
             if new_class is not None and new_class in self.classes.keys():
@@ -179,6 +187,7 @@ class AnnotationTool:
                 annotations = self.metadata.loc[self.current_frame_index, 'Previous Annotations']
                 self.display_image(cv2.imread(frame_path), annotations, self.frame_files[self.current_frame_index])
             else:
+                messagebox.showinfo("Info", f"{self.corrected_count} files corrected")
                 messagebox.showinfo("Info", "All frames processed.")
                 self.master.quit()
         elif event.keysym == 'Left' and self.current_frame_index > 0:
