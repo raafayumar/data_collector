@@ -87,10 +87,10 @@ def update_metadata_and_move_files(data_dir, csv_file):
     disconnect_from_shared_location(shared_folder)
 
 
-shared_folder = r'\\incabin\Incabin_DATA'
+shared_folder = r'\\172.1.40.45\Incabin_DATA'
 username = 'incabin'
 password = 'incabin@123'
-metadata_csv = r'\\incabin\incabin_data\AutoVault\metadata\metadata.csv'
+metadata_csv = r'\\172.1.40.45\incabin_data\AutoVault\metadata\metadata.csv'
 
 data_directory = input('Absolute path of the local datafolder: ')
 

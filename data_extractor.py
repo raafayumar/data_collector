@@ -26,7 +26,7 @@ convert_frames_to_video = 0
 video_output_path = 'test.mp4'
 
 # Copy extracted files to a different folder of your choice, set flag to 1.
-copy_extracted_files = 0
+copy_extracted_files = 1
 
 # Specify the destination folder where you want to copy the files
 copy_destination_folder = r'extracted_data'
@@ -36,13 +36,13 @@ data_folder_path = r'\\incabin\incabin_data\AutoVault\datafolder'
 
 # Set the details of the data to be extracted, leave it empty for 'all' conditions
 task = ''
-selected_sensor = ''
-date_pattern = ''
-location = ''
+selected_sensor = 'azure_ir'
+date_pattern = '2024-01-25'
+location = 'pa'
 gender = ''
 age = ''
 spectacles = ''
-extension = ''
+extension = 'txt'
 name_pattern = ''
 contact_num_pattern = ''
 run_pattern = ''
@@ -131,7 +131,7 @@ def copy_files_to_destination(files_paths, destination_folder):
         os.makedirs(destination_folder)
 
     for file_path in tqdm(files_paths, desc="Copying files", unit="file"):
-        copy_destination_path = os.path.join(destination_folder, file_path)
+        copy_destination_path = os.path.join(destination_folder, os.path.basename(file_path))
         # Copy the file to the destination folder
         shutil.copyfile(file_path, copy_destination_path)
 
