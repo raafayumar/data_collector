@@ -49,6 +49,48 @@ These scripts are pre-configured, ensuring a seamless start to your data collect
    - **Script Name:** `data_collector_Intel.py`
 
 
+## Data Collection with Annotations
+
+In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
+
+- Set `annotations_flag = 1` if you want to annotate the data whilst collecting. When this flag is set to 1, the script will use the `ImageAnnotator` module to interactively annotate frames from the sensor(s). Annotations include selecting bounding boxes and assigning class labels.
+
+- Set `annotations_flag = 0` if you want to continue data collection without annotations. In this mode, the script will solely focus on capturing data frames from the sensor(s) without any interactive annotation.
+
+Make sure to adjust the value of `annotations_flag` and edit the `class_names` based on your specific use case.
+
+## Data Extraction and Manipulation
+
+The `data_extractor.py` code provides options for processing data and exporting results.
+
+**Usage**
+  - Set the details of the data to be extracted, leave it empty for 'all' conditions.
+    
+  - Set frame_to_video_flag to 1 if you want to convert frames to a video.
+     - Specify the output_video_path for the generated video.
+       
+  - Set delete_flag to 1 if you want to delete selected files from the database.
+    
+  - Set copy_files_flag to 1 if you want to copy extracted files to a different folder.
+     - Specify the destination_folder where you want to copy the files.
+
+**Note:**
+Make sure to check the path of the `datafolder` to ensure accurate data extraction.   
+
+## Data Transfer to Server
+
+To streamline the process of transferring data to the server, a convenient `data_transfer.exe` tool is provided. Follow the steps below to transfer your data seamlessly:
+
+**Usage:**
+1. Run the `data_transfer.exe` executable by double-clicking on it.
+2. When prompted, provide the absolute path for the `datafolder` and `metadata` directories on your local system.
+3. The tool will automatically transfer the data to the server, following the predefined folder structure.
+
+**Important Note:**
+Ensure that you are connected to the network named 'TP-Link_866C' or have a reliable Ethernet cable plugged in for successful data transfer.
+
+This tool simplifies the data transfer process, making it efficient and user-friendly.
+
 # How-to and Script Usage
 1. **Import the Module:**
 
@@ -110,54 +152,14 @@ These scripts are pre-configured, ensuring a seamless start to your data collect
    - file_name_sensor_1: The constructed file name for sensor 1.
    - file_name_sensor_2: The constructed file name for sensor 2.
 
-8. **User Comments and Metadata:**
+7. **User Comments and Metadata:**
 
    A new function `add_comments` has been added to collect user comments at the end of each run and create a metadata CSV file. The metadata includes the following information: Task, Sensor, Date, Timestamp, Name, Contact_No, Location, Gender, Age, Spectacles, Run,   Comments, Trail_flag, Test_flag.
 
-## Data Collection with Annotations
-
-In the example code `data_collector.py`, you'll find a variable named `annotations_flag`. This variable controls whether the script performs data annotations or continues data collection. Here's how it works:
-
-- Set `annotations_flag = 1` if you want to annotate the data whilst collecting. When this flag is set to 1, the script will use the `ImageAnnotator` module to interactively annotate frames from the sensor(s). Annotations include selecting bounding boxes and assigning class labels.
-
-- Set `annotations_flag = 0` if you want to continue data collection without annotations. In this mode, the script will solely focus on capturing data frames from the sensor(s) without any interactive annotation.
-
-Make sure to adjust the value of `annotations_flag` and edit the `class_names` based on your specific use case.
-
-## Data Extraction and Manipulation
-
-The `data_extractor.py` code provides options for processing data and exporting results.
-
-**Usage**
-  - Set the details of the data to be extracted, leave it empty for 'all' conditions.
-    
-  - Set frame_to_video_flag to 1 if you want to convert frames to a video.
-     - Specify the output_video_path for the generated video.
-       
-  - Set delete_flag to 1 if you want to delete selected files from the database.
-    
-  - Set copy_files_flag to 1 if you want to copy extracted files to a different folder.
-     - Specify the destination_folder where you want to copy the files.
-
-**Note:**
-Make sure to check the path of the `datafolder` to ensure accurate data extraction.   
 ## Example Usage
 
 Refer to the example code in 'data_collector_for_2_sensor.py' for a sample implementation of data collection from two different sensors using separate threads.
 
-## Data Transfer to Server
-
-To streamline the process of transferring data to the server, a convenient `data_transfer.exe` tool is provided. Follow the steps below to transfer your data seamlessly:
-
-**Usage:**
-1. Run the `data_transfer.exe` executable by double-clicking on it.
-2. When prompted, provide the absolute path for the `datafolder` and `metadata` directories on your local system.
-3. The tool will automatically transfer the data to the server, following the predefined folder structure.
-
-**Important Note:**
-Ensure that you are connected to the network named 'TP-Link_866C' or have a reliable Ethernet cable plugged in for successful data transfer.
-
-This tool simplifies the data transfer process, making it efficient and user-friendly.
 
 ## Project Goals
 
