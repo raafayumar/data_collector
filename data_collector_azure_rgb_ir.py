@@ -23,13 +23,13 @@ import numpy as np
 rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 0
+annotations_flag = 1
 
 # number of bounding boxes in 1 frame.
-number_of_subjects = 2
+number_of_subjects = 1
 
 # Replace with your actual class labels
-class_names = ['With_SB', 'Without_SB']
+class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
 
 # Time in sec, if 0 then use 'S' to stop the code
 time_to_capture = 10
@@ -127,7 +127,7 @@ def azure_data():
         # Get the infrared image
         ret, ir_image = capture.get_ir_image()
         ir_image = ir_image.astype(np.int32)
-        
+
         # Get RGB image
         ret_rgb, rgb_image = capture.get_color_image()
 
