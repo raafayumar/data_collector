@@ -64,7 +64,7 @@ import csv
 load_previous = ''
 task_choice = ''
 lux_values = 0
-current_path = os.getcwd()
+current_path = os.path.dirname(os.path.realpath(__file__))
 os.makedirs(os.path.join(current_path, 'configs'), exist_ok=True)
 
 
