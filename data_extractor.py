@@ -23,10 +23,10 @@ delete_selected_files = 0
 convert_frames_to_video = 0
 
 # change file name.
-video_output_path = 'test.mp4'
+video_output_path = 'output_video.mp4'
 
 # Copy extracted files to a different folder of your choice, set flag to 1.
-copy_extracted_files = 1
+copy_extracted_files = 0
 
 # Specify the destination folder where you want to copy the files
 copy_destination_folder = r'extracted_data'
@@ -36,16 +36,16 @@ data_folder_path = r'\\incabin\incabin_data\AutoVault\datafolder'
 
 # Set the details of the data to be extracted, leave it empty for 'all' conditions
 task = ''
-selected_sensor = 'azure_ir'
-date_pattern = '2024-01-25'
-location = 'pa'
+selected_sensor = ''
+date_pattern = ''
+name_pattern = ''
+contact_num_pattern = ''
+location = ''
 gender = ''
 age = ''
 spectacles = ''
-extension = 'txt'
-name_pattern = ''
-contact_num_pattern = ''
 run_pattern = ''
+extension = ''
 
 
 def find_matching_files(data_folder_path, task, selected_sensor, location, gender, age, spectacles, extension):

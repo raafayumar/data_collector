@@ -28,7 +28,7 @@ annotations_flag = 0
 class_names = ['WITH_SB', 'WITHOUT_SB']  # Replace with your actual class labels
 
 # Time in sec
-time_to_capture = 10
+time_to_capture = 15
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -125,5 +125,5 @@ def azure_data():
             exit()
 
 
-rgb_thread = threading.Thread(target=azure_data)
-rgb_thread.start()
+file_const = threading.Thread(target=azure_data())
+file_const.start()
