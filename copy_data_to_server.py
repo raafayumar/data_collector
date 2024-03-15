@@ -7,7 +7,7 @@ from tqdm import tqdm
 import subprocess  # Add this import for subprocess
 from datetime import datetime
 
-current_path = os.getcwd()
+current_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def connect_to_shared_location(shared_folder, username, password):
@@ -94,7 +94,8 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                 csv_writer = csv.DictWriter(server_csv, fieldnames=local_data[0].keys())
                 if not os.path.exists(server_csv_path):
                     csv_writer.writeheader()  # Write header only if the file is empty
-                for row in unique_new_entries:
+                print('Please wait. Transferring files...')
+                for row in tqdm(unique_new_entries, desc='Total runs', unit='run'):
                     csv_writer.writerow(row)
 
                     # Convert the date format if it's not already in yyyy-mm-dd format
@@ -131,7 +132,8 @@ def copy_data_to_server(local_csv_path, server_csv_path, data_folder_path, serve
                                       if re.search(regex_pattern, f)]
 
                     # Copy only matching files from local to server
-                    for file in tqdm(filtered_files, desc="Copying files", unit="file"):
+                    # for file in tqdm(filtered_files, desc="Copying files", unit="file"):
+                    for file in filtered_files:
                         # print(file)
                         local_file_path = os.path.join(data_folder_path, row['Task'], row['Sensor'], date_value, file)
                         server_file_path = os.path.join(server_date_folder, file)
