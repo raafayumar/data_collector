@@ -79,10 +79,10 @@ Make sure to check the path of the `datafolder` to ensure accurate data extracti
 
 ## Data Transfer to Server
 
-To streamline the process of transferring data to the server, a convenient `data_transfer.exe` tool is provided. Follow the steps below to transfer your data seamlessly:
+To streamline the process of transferring data to the server, a convenient `DataTransfer.exe` tool is provided. Follow the steps below to transfer your data seamlessly:
 
 **Usage:**
-1. Run the `data_transfer.exe` executable by double-clicking on it.
+1. Run the `DataTransfer.exe` executable by double-clicking on it.
 2. When prompted, provide the absolute path for the `datafolder` and `metadata` directories on your local system.
 3. The tool will automatically transfer the data to the server, following the predefined folder structure.
 
