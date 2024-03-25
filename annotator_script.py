@@ -67,7 +67,7 @@ class AnnotationTool:
             if not os.path.exists(metadata_dir):
                 os.makedirs(metadata_dir)
 
-            self.frame_files = [f for f in os.listdir(self.frames_dir) if f.endswith('.jpg')]
+            self.frame_files = [f for f in os.listdir(self.frames_dir) if f.endswith(('.jpeg', '.jpg', '.png'))]
             # Update the total frames label
             self.total_frames_label.config(text=f"Total Frames: {len(self.frame_files)}")
             if self.frame_files:
@@ -99,6 +99,17 @@ class AnnotationTool:
             class_name = self.classes[class_id]
             bbox = annotation[1:]
             frame = self.draw_boxes(frame, [bbox], class_name)
+
+        # Resize the frame to fit within a certain size
+        max_width = 800  # Maximum width of the displayed image
+        max_height = 600  # Maximum height of the displayed image
+        height, width, _ = frame.shape
+        if width > max_width or height > max_height:
+            if width / max_width > height / max_height:
+                ratio = max_width / width
+            else:
+                ratio = max_height / height
+            frame = cv2.resize(frame, (int(width * ratio), int(height * ratio)))
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(frame)
