@@ -100,13 +100,16 @@ class ImageAnnotator:
         # Resize the frame to fit within a certain size
         max_width = 800  # Maximum width of the displayed image
         max_height = 600  # Maximum height of the displayed image
-        height, width, _ = self.frame.shape
-        if width > max_width or height > max_height:
-            if width / max_width > height / max_height:
-                ratio = max_width / width
-            else:
-                ratio = max_height / height
-            self.frame = cv2.resize(self.frame, (int(width * ratio), int(height * ratio)))
+        try:
+            height, width, _ = self.frame.shape
+            if width > max_width or height > max_height:
+                if width / max_width > height / max_height:
+                    ratio = max_width / width
+                else:
+                    ratio = max_height / height
+                self.frame = cv2.resize(self.frame, (int(width * ratio), int(height * ratio)))
+        except:
+            pass
         self.bbox = cv2.selectROI('Annotation', self.frame, fromCenter=False, showCrosshair=True)
         cv2.destroyWindow('Annotation')
         self.get_class_input()
