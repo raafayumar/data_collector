@@ -110,6 +110,7 @@ class ImageAnnotator:
                 self.frame = cv2.resize(self.frame, (int(width * ratio), int(height * ratio)))
         except:
             pass
+
         self.bbox = cv2.selectROI('Annotation', self.frame, fromCenter=False, showCrosshair=True)
         cv2.destroyWindow('Annotation')
         self.get_class_input()
@@ -310,10 +311,10 @@ def file_constructor():
     return file_name
 
 
-def add_comments(content):
+def add_comments(content, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
-    meta_file = 'metadata.csv'
+    meta_file = 'metadata_v1.csv'
     meta_path = os.path.join(current_path, 'metadata')
     os.makedirs(meta_path, exist_ok=True)
 
@@ -321,7 +322,7 @@ def add_comments(content):
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             csv_writer.writerow([task_and_sensor_info["task"],
                                  task_and_sensor_info["sensor"],
                                  datetime.datetime.now().date(),
@@ -333,6 +334,9 @@ def add_comments(content):
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 road_condition,
+                                 traffic_condition,
+                                 electronic_disturbance,
                                  content])
 
     else:
@@ -349,11 +353,14 @@ def add_comments(content):
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 road_condition,
+                                 traffic_condition,
+                                 electronic_disturbance,
                                  content])
 
 
-def add_comments_ir_rgb(content, s1):
-    meta_file = 'metadata.csv'
+def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_disturbance, s1):
+    meta_file = 'metadata_v1.csv'
     meta_path = os.path.join(current_path, 'metadata')
     os.makedirs(meta_path, exist_ok=True)
 
@@ -361,12 +368,12 @@ def add_comments_ir_rgb(content, s1):
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Comments', 'Train_flag', 'Val_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             for s in s1:
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
                 csv_writer.writerow([task_and_sensor_info["task"],
-                                     s,
+                                     task_and_sensor_info["sensor"],
                                      datetime.datetime.now().date(),
                                      t_stamp,
                                      user_configuration['name'],
@@ -376,6 +383,9 @@ def add_comments_ir_rgb(content, s1):
                                      user_configuration['age'],
                                      user_configuration['spectacles'],
                                      user_configuration['run'],
+                                     road_condition,
+                                     traffic_condition,
+                                     electronic_disturbance,
                                      content])
                 time.sleep(0.1)
 
@@ -386,7 +396,7 @@ def add_comments_ir_rgb(content, s1):
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
                 csv_writer.writerow([task_and_sensor_info["task"],
-                                     s,
+                                     task_and_sensor_info["sensor"],
                                      datetime.datetime.now().date(),
                                      t_stamp,
                                      user_configuration['name'],
@@ -396,5 +406,50 @@ def add_comments_ir_rgb(content, s1):
                                      user_configuration['age'],
                                      user_configuration['spectacles'],
                                      user_configuration['run'],
+                                     road_condition,
+                                     traffic_condition,
+                                     electronic_disturbance,
                                      content])
                 time.sleep(0.1)
+
+
+def get_audio_configuration():
+    prompt = (
+        'Enter recording details  (e.g., 1111): \n'
+        ' Engine mode 1: engine_on, 0: engine_off \n'
+        ' Windows     1: closed,    0: open \n'
+        ' Music       1: music_on,  0: music_off \n'
+        ' Number of occupants : 1 to 5 \n'
+        ' Example input: 1111 \n'
+    )
+
+    valid_input_first_three = ['0', '1']
+    valid_input_last = ['1', '2', '3', '4', '5']
+
+    while True:
+        user_input = input(prompt)
+        if (
+                len(user_input) == 4 and
+                all(bit in valid_input_first_three for bit in user_input[:3]) and
+                user_input[3] in valid_input_last
+        ):
+            engine_mode = 'engine_on' if user_input[0] == '1' else 'engine_off'
+            windows = 'closed' if user_input[1] == '1' else 'open'
+            music = 'music_on' if user_input[2] == '1' else 'music_off'
+            occupants = user_input[3]  # Directly take the number of occupants from input
+            return {
+                'audio_name': time.time(),
+                'engine_mode': engine_mode,
+                'windows': windows,
+                'music': music,
+                'occupants': occupants
+            }
+        else:
+            print("Invalid input. Please enter a 4-bit flag in the format specified.")
+
+
+def save_to_csv(csv_file, timestamp, user_configuration, comment):
+    with open(csv_file, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([timestamp, user_configuration['audio_name'], user_configuration['engine_mode'],
+                         user_configuration['windows'], user_configuration['music'], user_configuration['occupants'], comment])
