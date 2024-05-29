@@ -31,7 +31,7 @@ class_names = ['WITH_SB', 'WITHOUT_SB']  # Replace with your actual class labels
 time_to_capture = 15
 
 # Change file_extension, to 'npy' to save raw data
-file_extension = 'jpeg'
+file_extension = 'npy'
 file_extension_annotations = 'txt'
 
 # Initialize the library, if the library is not found, add the library path as argument
@@ -80,7 +80,7 @@ def azure_data():
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret_rgb:
-            pass
+            continue
 
         # get the constructed file name, with lux values for Azure RGB
         name = file_constructor()

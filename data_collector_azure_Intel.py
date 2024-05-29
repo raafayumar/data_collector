@@ -58,7 +58,7 @@ def azure_data():
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret or not ret_rgb:
-            pass
+            continue
 
         # get the constructed file name, with lux values for Azure IR
         name_i = file_constructor()
@@ -107,7 +107,7 @@ def intel_data():
         ret, intel = cam.read()
 
         if not ret:
-            pass
+            continue
 
         # get the constructed file name, with lux values for Intel camera.
         name = file_constructor()

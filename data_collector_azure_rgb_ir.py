@@ -18,12 +18,13 @@ import time
 import pykinect_azure as pykinect
 import cv2
 import numpy as np
+import keyboard
 
 # Set to 1 if rotation by 180 degree is needed.
 rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 1
+annotations_flag = 0
 
 # number of bounding boxes in 1 frame.
 number_of_subjects = 1
@@ -42,7 +43,8 @@ file_extension_annotations = 'txt'
 pykinect.initialize_libraries()
 # Modify camera configuration
 device_config = pykinect.default_configuration
-device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_1080P
+device_config.color_resolution = pykinect.K4A_COLOR_RESOLUTION_720P
+device_config.color_format = pykinect.K4A_IMAGE_FORMAT_COLOR_YUY2
 device_config.depth_mode = pykinect.K4A_DEPTH_MODE_WFOV_2X2BINNED
 device_config.camera_fps = pykinect.K4A_FRAMES_PER_SECOND_30
 
@@ -60,6 +62,12 @@ alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
 
 s_list = [sensor_1, sensor_2]
+
+road_condition = input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n')
+
+traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
+
+disturbance = ''
 
 if annotations_flag:
     ir_annotation_string = []
@@ -115,6 +123,15 @@ if annotations_flag:
         counter += 1
 
 
+# Function to toggle the flag state
+def toggle_flag():
+    global disturbance
+    disturbance = time.time() if disturbance == 0 else 0
+
+
+keyboard.on_press_key('ctrl', lambda _: toggle_flag())
+
+
 def azure_data():
     frame_count = 0
     cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
@@ -133,7 +150,7 @@ def azure_data():
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret or not ret_rgb:
-            pass
+            continue
 
         # get the constructed file name, with lux values for Azure IR
         name_i = file_constructor()
@@ -205,7 +222,7 @@ def azure_data():
                 print(time.time() - start_time)
                 print(f'FPS: {fps}')
                 comment = input('Enter Comments:')
-                add_comments_ir_rgb(comment, s_list)
+                add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -214,7 +231,7 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments_ir_rgb(comment, s_list)
+            add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
             exit()
 
 
