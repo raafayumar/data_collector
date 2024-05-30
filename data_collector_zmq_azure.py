@@ -67,6 +67,8 @@ socket.setsockopt(zmq.SUBSCRIBE, b'RGB')
 socket.setsockopt(zmq.SUBSCRIBE, b'IR')
 socket.setsockopt(zmq.RCVHWM, 1)  # Set high watermark to 1 to avoid buffering
 
+flag = 1
+
 
 # Function to drain the queue and keep the latest message for each topic
 def drain_queue(socket):
@@ -149,7 +151,7 @@ drain_queue(socket)
 
 
 def azure_data():
-    global rgb_image, ir_image
+    global rgb_image, ir_image, flag
     frame_count = 0
     cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
@@ -158,9 +160,6 @@ def azure_data():
     while True:
         try:
             latest_rgb, latest_ir = drain_queue(socket)  # Clear out old messages and get the latest ones
-            # # Get frames from azure.
-            # frame_type, frame_bytes = socket.recv_multipart()
-            # frame = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
 
             # get the constructed file name, with lux values for Azure IR
             name_i = file_constructor()
@@ -238,8 +237,11 @@ def azure_data():
 
             # Stop after 10 sec
             if time_to_capture != 0:
-                if time.time() - start_time >= time_to_capture:
+                if time.time() - start_time >= (time_to_capture/2) and flag:
                     send_trigger()
+                    flag = 0
+
+                if time.time() - start_time >= time_to_capture:
                     fps = frame_count / (time.time() - start_time)
                     print(time.time() - start_time)
                     print(f'FPS: {fps}')
