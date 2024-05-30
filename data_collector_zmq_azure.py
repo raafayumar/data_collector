@@ -11,7 +11,7 @@
 """
 
 import initializer
-from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, get_audio_configuration
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, get_audio_configuration, send_trigger
 import os
 import numpy as np
 import time
@@ -59,13 +59,30 @@ traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:
 
 disturbance = 'None'
 
+# Setup ZeroMQ context and socket
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-socket.connect("tcp://172.1.40.74:5555")  # Connect to the sender's address
-socket.setsockopt(zmq.RCVHWM, 1)
+socket.connect("tcp://172.1.40.74:5555")
+socket.setsockopt(zmq.SUBSCRIBE, b'RGB')
+socket.setsockopt(zmq.SUBSCRIBE, b'IR')
+socket.setsockopt(zmq.RCVHWM, 1)  # Set high watermark to 1 to avoid buffering
 
-# Subscribe to all messages
-socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+# Function to drain the queue and keep the latest message for each topic
+def drain_queue(socket):
+    latest_rgb = None
+    latest_ir = None
+    while True:
+        try:
+            topic, img_buffer = socket.recv_multipart(zmq.NOBLOCK)
+            if topic == b'RGB':
+                latest_rgb = (topic, img_buffer)
+            elif topic == b'IR':
+                latest_ir = (topic, img_buffer)
+        except zmq.Again:
+            break
+    return latest_rgb, latest_ir
+
 
 if annotations_flag:
     ir_annotation_string = []
@@ -127,6 +144,9 @@ def toggle_flag():
 keyboard.on_press_key('ctrl', lambda _: toggle_flag())
 keyboard.on_release_key('ctrl', lambda _: toggle_flag())
 
+# Initial queue drain to clear out any messages that were received during setup
+drain_queue(socket)
+
 
 def azure_data():
     global rgb_image, ir_image
@@ -137,93 +157,104 @@ def azure_data():
     start_time = time.time()  # set timer
     while True:
         try:
-            while socket.poll(timeout=0):
-                # Get frames from azure.
-                frame_type, frame_bytes = socket.recv_multipart()
-                frame = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
+            latest_rgb, latest_ir = drain_queue(socket)  # Clear out old messages and get the latest ones
+            # # Get frames from azure.
+            # frame_type, frame_bytes = socket.recv_multipart()
+            # frame = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
 
-                # get the constructed file name, with lux values for Azure IR
-                name_i = file_constructor()
-                path_i = os.path.join(path_ir, name_i)
+            # get the constructed file name, with lux values for Azure IR
+            name_i = file_constructor()
+            path_i = os.path.join(path_ir, name_i)
 
-                # construct the final file name
-                file_name_i = f'{path_i}_{frame_count:07d}.{file_extension}'
-                data_i = os.path.join(path_i, file_name_i)
+            # construct the final file name
+            file_name_i = f'{path_i}_{frame_count:07d}.{file_extension}'
+            data_i = os.path.join(path_i, file_name_i)
 
-                # Path and file name for Azure RGB
-                path_r = os.path.join(path_rgb, name_i)
+            # Path and file name for Azure RGB
+            path_r = os.path.join(path_rgb, name_i)
 
-                # construct the final file name
-                file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
-                data_r = os.path.join(path_r, file_name_r)
+            # construct the final file name
+            file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
+            data_r = os.path.join(path_r, file_name_r)
 
-                print(data_i)
-                print(data_r)
+            print(data_i)
+            print(data_r)
 
-                if frame_type == b"RGB":
-                    rgb_image = frame
-
-                elif frame_type == b"IR":
-                    ir_image = frame
-
-                # call convertScaleAbs function, just for visualisation
-                adjusted_ir = ir_image
-                cv2.imshow('IR Image', adjusted_ir)
-                cv2.imshow('RGB Image', rgb_image)
-
-                # check file extension and save accordingly
-                if file_extension != 'npy':
-                    cv2.imwrite(data_i, adjusted_ir)
-                    cv2.imwrite(data_r, rgb_image)
+            if latest_rgb:
+                topic, img_buffer = latest_rgb
+                img_array = np.frombuffer(img_buffer, dtype=np.uint8)
+                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                if img is not None:
+                    rgb_image = img
                 else:
-                    np.save(data_i, ir_image)
-                    np.save(data_r, rgb_image)
+                    print("Failed to decode RGB image")
 
-                if annotations_flag:
-                    anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
-                    anno_data = os.path.join(path_r, anno_file)
-                    with open(anno_data, 'w') as file:
-                        if type(rgb_annotation_string) == list:
-                            for i in range(0, number_of_subjects):
-                                # Write annotation data to the file
-                                file.write(rgb_annotation_string[i] + '\n')
-                        else:
-                            file.write(rgb_annotation_string)
+            if latest_ir:
+                topic, img_buffer = latest_ir
+                img_array = np.frombuffer(img_buffer, dtype=np.uint8)
+                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                if img is not None:
+                    ir_image = img
+                else:
+                    print("Failed to decode IR image")
 
-                if annotations_flag:
-                    anno_file1 = f'{path_i}_{frame_count:07d}.{file_extension_annotations}'
-                    anno_data1 = os.path.join(path_i, anno_file1)
-                    with open(anno_data1, 'w') as file:
-                        if type(ir_annotation_string) == list:
-                            for i in range(0, number_of_subjects):
-                                # Write annotation data to the file
-                                file.write(ir_annotation_string[i] + '\n')
-                        else:
-                            file.write(ir_annotation_string)
+            cv2.imshow('IR Image', ir_image)
+            cv2.imshow('RGB Image', rgb_image)
 
-                frame_count += 1  # frame counter
+            # check file extension and save accordingly
+            if file_extension != 'npy':
+                cv2.imwrite(data_i, ir_image)
+                cv2.imwrite(data_r, rgb_image)
+            else:
+                np.save(data_i, ir_image)
+                np.save(data_r, rgb_image)
 
-                if cv2.waitKey(1) == ord('q'):
-                    break
+            if annotations_flag:
+                anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
+                anno_data = os.path.join(path_r, anno_file)
+                with open(anno_data, 'w') as file:
+                    if type(rgb_annotation_string) == list:
+                        for i in range(0, number_of_subjects):
+                            # Write annotation data to the file
+                            file.write(rgb_annotation_string[i] + '\n')
+                    else:
+                        file.write(rgb_annotation_string)
 
-                # Stop after 10 sec
-                if time_to_capture != 0:
-                    if time.time() - start_time >= time_to_capture:
-                        fps = frame_count / (time.time() - start_time)
-                        print(time.time() - start_time)
-                        print(f'FPS: {fps}')
-                        comment = input('Enter Comments:')
-                        add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
-                        exit()
+            if annotations_flag:
+                anno_file1 = f'{path_i}_{frame_count:07d}.{file_extension_annotations}'
+                anno_data1 = os.path.join(path_i, anno_file1)
+                with open(anno_data1, 'w') as file:
+                    if type(ir_annotation_string) == list:
+                        for i in range(0, number_of_subjects):
+                            # Write annotation data to the file
+                            file.write(ir_annotation_string[i] + '\n')
+                    else:
+                        file.write(ir_annotation_string)
 
-                # Stop when 'S' is pressed
-                if cv2.waitKey(1) == ord('s'):
+            frame_count += 1  # frame counter
+
+            if cv2.waitKey(1) == ord('q'):
+                break
+
+            # Stop after 10 sec
+            if time_to_capture != 0:
+                if time.time() - start_time >= time_to_capture:
+                    send_trigger()
                     fps = frame_count / (time.time() - start_time)
                     print(time.time() - start_time)
                     print(f'FPS: {fps}')
                     comment = input('Enter Comments:')
                     add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
                     exit()
+
+            # Stop when 'S' is pressed
+            if cv2.waitKey(1) == ord('s'):
+                fps = frame_count / (time.time() - start_time)
+                print(time.time() - start_time)
+                print(f'FPS: {fps}')
+                comment = input('Enter Comments:')
+                add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+                exit()
 
         except Exception as e:
             print(f"An error occurred: {e}")

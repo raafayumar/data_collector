@@ -159,6 +159,19 @@ data_thread.daemon = True
 data_thread.start()
 
 
+def send_trigger():
+    # ESP32 IP address and port
+    esp_ip = "192.168.0.4"  # Replace with the IP address of your ESP32
+    esp_port = 4040
+    esp_msg = '1'
+    # Create the socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    for i in range(2):
+        # Send the message
+        sock.sendto(esp_msg.encode(), (esp_ip, esp_port))
+
+
 def initialize_details(sensor_name=None):
     global load_previous, task_choice, user_configuration, task_and_sensor_info
 
@@ -415,7 +428,7 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
 
 def get_audio_configuration():
     prompt = (
-        'Enter recording details  (e.g., 1111): \n'
+        '\nEnter recording details  (e.g., 1111): \n'
         ' Engine mode 1: engine_on, 0: engine_off \n'
         ' Windows     1: closed,    0: open \n'
         ' Music       1: music_on,  0: music_off \n'
