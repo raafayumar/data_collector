@@ -386,7 +386,7 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
                 csv_writer.writerow([task_and_sensor_info["task"],
-                                     task_and_sensor_info["sensor"],
+                                     s,
                                      datetime.datetime.now().date(),
                                      t_stamp,
                                      user_configuration['name'],
@@ -409,7 +409,7 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
                 csv_writer.writerow([task_and_sensor_info["task"],
-                                     task_and_sensor_info["sensor"],
+                                     s,
                                      datetime.datetime.now().date(),
                                      t_stamp,
                                      user_configuration['name'],
@@ -440,22 +440,23 @@ def get_audio_configuration():
     valid_input_last = ['1', '2', '3', '4', '5']
 
     while True:
-        user_input = input(prompt)
+        audio_bit_user_input = input(prompt)
         if (
-                len(user_input) == 4 and
-                all(bit in valid_input_first_three for bit in user_input[:3]) and
-                user_input[3] in valid_input_last
+                len(audio_bit_user_input) == 4 and
+                all(bit in valid_input_first_three for bit in audio_bit_user_input[:3]) and
+                audio_bit_user_input[3] in valid_input_last
         ):
-            engine_mode = 'engine_on' if user_input[0] == '1' else 'engine_off'
-            windows = 'closed' if user_input[1] == '1' else 'open'
-            music = 'music_on' if user_input[2] == '1' else 'music_off'
-            occupants = user_input[3]  # Directly take the number of occupants from input
+            engine_mode = 'engine_on' if audio_bit_user_input[0] == '1' else 'engine_off'
+            windows = 'closed' if audio_bit_user_input[1] == '1' else 'open'
+            music = 'music_on' if audio_bit_user_input[2] == '1' else 'music_off'
+            occupants = audio_bit_user_input[3]  # Directly take the number of occupants from input
             return {
                 'audio_name': time.time(),
                 'engine_mode': engine_mode,
                 'windows': windows,
                 'music': music,
-                'occupants': occupants
+                'occupants': occupants,
+                'bits': audio_bit_user_input
             }
         else:
             print("Invalid input. Please enter a 4-bit flag in the format specified.")
