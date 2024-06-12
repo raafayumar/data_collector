@@ -21,7 +21,12 @@ import sounddevice
 from scipy.io.wavfile import write
 from datetime import datetime
 import threading
-import keyboard
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
+sl_no = 1  # Starting serial number
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
@@ -57,34 +62,37 @@ road_condition = input('\nPlease select road condition.\nGood road:0, Moderate r
 
 traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
 
+
+# Create variables based on user inputs
+if road_condition == '0':
+    road_condition_text = "Good road"
+elif road_condition == '1':
+    road_condition_text = "Moderate road"
+elif road_condition == '2':
+    road_condition_text = "Bad road"
+else:
+    road_condition_text = "Unknown road condition"
+
+if traffic_condition == '0':
+    traffic_condition_text = "Mild traffic"
+elif traffic_condition == '1':
+    traffic_condition_text = "Moderate traffic"
+elif traffic_condition == '2':
+    traffic_condition_text = "Heavy traffic"
+else:
+    traffic_condition_text = "Unknown traffic condition"
+
 disturbance = 'None'
 
 # Setup ZeroMQ context and socket
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-socket.connect("tcp://172.1.40.74:5555")
+socket.connect("tcp://192.168.0.3:5555")
 socket.setsockopt(zmq.SUBSCRIBE, b'RGB')
 socket.setsockopt(zmq.SUBSCRIBE, b'IR')
 socket.setsockopt(zmq.RCVHWM, 1)  # Set high watermark to 1 to avoid buffering
 
 flag = 1
-
-
-# Function to drain the queue and keep the latest message for each topic
-def drain_queue(socket):
-    latest_rgb = None
-    latest_ir = None
-    while True:
-        try:
-            topic, img_buffer = socket.recv_multipart(zmq.NOBLOCK)
-            if topic == b'RGB':
-                latest_rgb = (topic, img_buffer)
-            elif topic == b'IR':
-                latest_ir = (topic, img_buffer)
-        except zmq.Again:
-            break
-    return latest_rgb, latest_ir
-
 
 if annotations_flag:
     ir_annotation_string = []
@@ -137,28 +145,38 @@ ir_image = None
 rgb_image = None
 
 
-# Function to toggle the flag state
-def toggle_flag():
-    global disturbance
-    disturbance = time.time() if disturbance == 0 else 0
+# Function to drain the queue and keep the latest message for each topic
+def drain_queue(socket):
+    latest_rgb = None
+    latest_ir = None
+    while True:
+        try:
+            topic, img_buffer = socket.recv_multipart(zmq.NOBLOCK)
+            if topic == b'RGB':
+                latest_rgb = (topic, img_buffer)
+            elif topic == b'IR':
+                latest_ir = (topic, img_buffer)
+        except zmq.Again:
+            break
+    return latest_rgb, latest_ir
 
-
-keyboard.on_press_key('ctrl', lambda _: toggle_flag())
-keyboard.on_release_key('ctrl', lambda _: toggle_flag())
 
 # Initial queue drain to clear out any messages that were received during setup
 drain_queue(socket)
 
 
 def azure_data():
-    global rgb_image, ir_image, flag
+    global rgb_image, ir_image, flag, disturbance, stop_flag
     frame_count = 0
+    sl_no = 1
     cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
 
     start_time = time.time()  # set timer
     while True:
         try:
+            table = Table(title="Details of the run")
+
             latest_rgb, latest_ir = drain_queue(socket)  # Clear out old messages and get the latest ones
 
             # get the constructed file name, with lux values for Azure IR
@@ -176,8 +194,45 @@ def azure_data():
             file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
             data_r = os.path.join(path_r, file_name_r)
 
-            print(data_i)
-            print(data_r)
+            time_remaining = str(int(time_to_capture - (time.time() - start_time)))
+
+            parts = str(os.path.split(path_i)[-1]).split('_')
+            s_list_formatted = "\n".join([str(item) for item in s_list])
+            lux_value = parts[7]
+            name = parts[1]
+            run = parts[-1]
+
+            if parts[7] == '00000':
+                lux_value = 'Check LUX'
+
+            table.add_column("Sl No", justify="right", style="cyan", no_wrap=True)
+            table.add_column("Subject", justify="right", style="cyan")
+            table.add_column("Time Remaining", justify="right", style="cyan")
+            table.add_column("Road Condition", justify="right", style="cyan")
+            table.add_column("Traffic Condition", justify="right", style="cyan")
+            table.add_column("Audio Config bit", justify="right", style="cyan")
+            table.add_column("Sensors", justify="right", style="cyan")
+            table.add_column("Lux", justify="right", style="red")
+            table.add_column("Run", justify="right", style="cyan")
+            table.add_column("Frame", justify="right", style="cyan")
+
+            table.add_row(
+                str(sl_no),
+                str(name),
+                time_remaining,
+                road_condition_text,
+                traffic_condition_text,
+                str(audio_data['bits']),
+                str(s_list_formatted),
+                str(lux_value),
+                str(run),
+                str(frame_count)
+            )
+
+            console.clear()
+            console.print(table)
+
+            sl_no += 1
 
             if latest_rgb:
                 topic, img_buffer = latest_rgb
@@ -185,6 +240,7 @@ def azure_data():
                 img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 if img is not None:
                     rgb_image = img
+                    threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
                 else:
                     print("Failed to decode RGB image")
 
@@ -194,19 +250,12 @@ def azure_data():
                 img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 if img is not None:
                     ir_image = img
+                    threading.Thread(target=save_image, args=(data_i, ir_image)).start()
                 else:
                     print("Failed to decode IR image")
 
             cv2.imshow('IR Image', ir_image)
             cv2.imshow('RGB Image', rgb_image)
-
-            # check file extension and save accordingly
-            if file_extension != 'npy':
-                cv2.imwrite(data_i, ir_image)
-                cv2.imwrite(data_r, rgb_image)
-            else:
-                np.save(data_i, ir_image)
-                np.save(data_r, rgb_image)
 
             if annotations_flag:
                 anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
@@ -238,6 +287,7 @@ def azure_data():
             # Stop after 10 sec
             if time_to_capture != 0:
                 if time.time() - start_time >= (time_to_capture/2) and flag:
+                    disturbance = time.time()
                     send_trigger()
                     flag = 0
 
@@ -247,6 +297,7 @@ def azure_data():
                     print(f'FPS: {fps}')
                     comment = input('Enter Comments:')
                     add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+                    stop_flag = 1
                     exit()
 
             # Stop when 'S' is pressed
@@ -256,11 +307,20 @@ def azure_data():
                 print(f'FPS: {fps}')
                 comment = input('Enter Comments:')
                 add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+                stop_flag = 1
                 exit()
 
         except Exception as e:
             print(f"An error occurred: {e}")
             continue
+
+
+def save_image(filename, img):
+    # check file extension and save accordingly
+    if file_extension != 'npy':
+        cv2.imwrite(filename, img)
+    else:
+        np.save(filename, img)
 
 
 def record_audio(sample_rate=44100, channels=1):
@@ -278,8 +338,8 @@ def record_audio(sample_rate=44100, channels=1):
     write(output_file, sample_rate, recorded_voice)
 
 
-audio_data_capture = threading.Thread(target=record_audio)
-audio_data_capture.start()
-
 azure_data_capture = threading.Thread(target=azure_data)
+audio_data_capture = threading.Thread(target=record_audio)
+
 azure_data_capture.start()
+audio_data_capture.start()

@@ -12,7 +12,7 @@
 
 """
 import initializer
-from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, get_audio_configuration
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, get_audio_configuration, send_trigger
 import os
 import time
 import pykinect_azure as pykinect
@@ -22,7 +22,6 @@ import sounddevice
 from scipy.io.wavfile import write
 from datetime import datetime
 import threading
-import keyboard
 
 
 # Set to 1 if rotation by 180 degree is needed.
@@ -38,7 +37,7 @@ number_of_subjects = 1
 class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
 
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = 15
+time_to_capture = 10
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -64,7 +63,6 @@ path_rgb = path_ir.replace(sensor_1, sensor_2)
 os.makedirs(path_rgb, exist_ok=True)
 
 audio_data = get_audio_configuration()
-print(audio_data)
 
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
@@ -76,6 +74,8 @@ road_condition = input('\nPlease select road condition.\nGood road:0, Moderate r
 traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
 
 disturbance = 'None'
+
+flag = 1
 
 if annotations_flag:
     ir_annotation_string = []
@@ -131,18 +131,18 @@ if annotations_flag:
         counter += 1
 
 
-# Function to toggle the flag state
-def toggle_flag():
-    global disturbance
-    disturbance = time.time() if disturbance == 0 else 0
-
-
-keyboard.on_press_key('ctrl', lambda _: toggle_flag())
+def save_image(filename, img):
+    # check file extension and save accordingly
+    if file_extension != 'npy':
+        cv2.imwrite(filename, img)
+    else:
+        np.save(filename, img)
 
 
 def azure_data():
+    global flag, disturbance
     frame_count = 0
-    cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
     start_time = time.time()  # set timer
 
@@ -152,13 +152,14 @@ def azure_data():
 
         # Get the infrared image
         ret, ir_image = capture.get_ir_image()
-        ir_image = ir_image.astype(np.int32)
 
         # Get RGB image
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret or not ret_rgb:
             continue
+
+        ir_image = ir_image.astype(np.int32)
 
         # get the constructed file name, with lux values for Azure IR
         name_i = file_constructor()
@@ -188,13 +189,15 @@ def azure_data():
         cv2.imshow('IR Image', adjusted_ir)
         cv2.imshow('RGB Image', rgb_image)
 
-        # check file extension and save accordingly
-        if file_extension != 'npy':
-            cv2.imwrite(data_i, adjusted_ir)
-            cv2.imwrite(data_r, rgb_image)
-        else:
-            np.save(data_i, ir_image)
-            np.save(data_r, rgb_image)
+        threading.Thread(target=save_image, args=(data_i, adjusted_ir)).start()
+        threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
+        # # check file extension and save accordingly
+        # if file_extension != 'npy':
+        #     cv2.imwrite(data_i, adjusted_ir)
+        #     cv2.imwrite(data_r, rgb_image)
+        # else:
+        #     np.save(data_i, ir_image)
+        #     np.save(data_r, rgb_image)
 
         if annotations_flag:
             anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
@@ -225,6 +228,11 @@ def azure_data():
 
         # Stop after 10 sec
         if time_to_capture != 0:
+            if time.time() - start_time >= (time_to_capture / 2) and flag:
+                disturbance = time.time()
+                send_trigger()
+                flag = 0
+
             if time.time() - start_time >= time_to_capture:
                 fps = frame_count / (time.time() - start_time)
                 print(time.time() - start_time)

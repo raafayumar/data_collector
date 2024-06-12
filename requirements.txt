@@ -2,3 +2,8 @@ pykinect-azure
 opencv-python
 numpy
 pandas
+rich
+tqdm
+pyinstaller
+imagezmq
+sounddevice
