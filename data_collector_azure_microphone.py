@@ -12,7 +12,8 @@
 
 """
 import initializer
-from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, get_audio_configuration, send_trigger
+from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, \
+    get_audio_configuration, send_trigger
 import os
 import time
 import pykinect_azure as pykinect
@@ -22,10 +23,13 @@ import sounddevice
 from scipy.io.wavfile import write
 from datetime import datetime
 import threading
+from rich.console import Console
+from rich.table import Table
 
+console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 1
+rotate_flag = 0
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
@@ -37,7 +41,7 @@ number_of_subjects = 1
 class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
 
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = 10
+time_to_capture = int(input('Please enter\nTime to capture in Seconds:'))
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -76,6 +80,27 @@ traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:
 disturbance = 'None'
 
 flag = 1
+
+sl_no = 1  # Starting serial number
+
+# Create variables based on user inputs
+if road_condition == '0':
+    road_condition_text = "Good road"
+elif road_condition == '1':
+    road_condition_text = "Moderate road"
+elif road_condition == '2':
+    road_condition_text = "Bad road"
+else:
+    road_condition_text = "Unknown road condition"
+
+if traffic_condition == '0':
+    traffic_condition_text = "Mild traffic"
+elif traffic_condition == '1':
+    traffic_condition_text = "Moderate traffic"
+elif traffic_condition == '2':
+    traffic_condition_text = "Heavy traffic"
+else:
+    traffic_condition_text = "Unknown traffic condition"
 
 if annotations_flag:
     ir_annotation_string = []
@@ -142,11 +167,14 @@ def save_image(filename, img):
 def azure_data():
     global flag, disturbance
     frame_count = 0
+    sl_no = 1
     cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
-    start_time = time.time()  # set timer
 
+    start_time = time.time()  # set timer
     while True:
+        table = Table(title="Details of the run")
+
         # Get frames from azure.
         capture = device.update()
 
@@ -176,8 +204,45 @@ def azure_data():
         file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
         data_r = os.path.join(path_r, file_name_r)
 
-        print(data_i)
-        print(data_r)
+        time_remaining = str(int(time_to_capture - (time.time() - start_time)))
+
+        parts = str(os.path.split(path_i)[-1]).split('_')
+        s_list_formatted = "\n".join([str(item) for item in s_list])
+        lux_value = parts[7]
+        name = parts[1]
+        run = parts[-1]
+
+        if parts[7] == '00000':
+            lux_value = 'Check LUX'
+
+        table.add_column("Sl No", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Subject", justify="right", style="cyan")
+        table.add_column("Time Remaining", justify="right", style="cyan")
+        table.add_column("Road Condition", justify="right", style="cyan")
+        table.add_column("Traffic Condition", justify="right", style="cyan")
+        table.add_column("Audio Config bit", justify="right", style="cyan")
+        table.add_column("Sensors", justify="right", style="cyan")
+        table.add_column("Lux", justify="right", style="red")
+        table.add_column("Run", justify="right", style="cyan")
+        table.add_column("Frame", justify="right", style="cyan")
+
+        table.add_row(
+            str(sl_no),
+            str(name),
+            time_remaining,
+            road_condition_text,
+            traffic_condition_text,
+            str(audio_data['bits']),
+            str(s_list_formatted),
+            str(lux_value),
+            str(run),
+            str(frame_count)
+        )
+
+        console.clear()
+        console.print(table)
+
+        sl_no += 1
 
         if rotate_flag:
             # Rotate the frame by 180 degree
@@ -191,13 +256,6 @@ def azure_data():
 
         threading.Thread(target=save_image, args=(data_i, adjusted_ir)).start()
         threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
-        # # check file extension and save accordingly
-        # if file_extension != 'npy':
-        #     cv2.imwrite(data_i, adjusted_ir)
-        #     cv2.imwrite(data_r, rgb_image)
-        # else:
-        #     np.save(data_i, ir_image)
-        #     np.save(data_r, rgb_image)
 
         if annotations_flag:
             anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
@@ -259,7 +317,8 @@ def record_audio(sample_rate=44100, channels=1):
         os.makedirs(output_directory)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(output_directory, f"{audio_data['audio_name']}_{audio_data['engine_mode']}_{audio_data['windows']}_{audio_data['music']}_{audio_data['occupants']}_{timestamp}.wav")
+    output_file = os.path.join(output_directory,
+                               f"{audio_data['audio_name']}_{audio_data['engine_mode']}_{audio_data['windows']}_{audio_data['music']}_{audio_data['occupants']}_{timestamp}.wav")
 
     recorded_voice = sounddevice.rec(int(time_to_capture * sample_rate), samplerate=sample_rate, channels=channels)
     sounddevice.wait()
