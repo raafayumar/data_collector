@@ -162,7 +162,7 @@ data_thread.start()
 def send_trigger():
     # ESP32 IP address and port
     esp_ip = "192.168.0.4"  # Replace with the IP address of your ESP32
-    esp_port = 4040
+    esp_port = 2828
     esp_msg = '1'
     # Create the socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
