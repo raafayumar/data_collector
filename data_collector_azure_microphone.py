@@ -13,7 +13,7 @@
 """
 import initializer
 from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, \
-    get_audio_configuration, send_trigger
+    get_audio_configuration, send_trigger, add_comments_vayyar
 import os
 import time
 import pykinect_azure as pykinect
@@ -296,6 +296,7 @@ def azure_data():
                 print(time.time() - start_time)
                 print(f'FPS: {fps}')
                 comment = input('Enter Comments:')
+                device.close()
                 add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
                 exit()
 
@@ -316,14 +317,46 @@ def record_audio(sample_rate=44100, channels=1):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_directory,
-                               f"{audio_data['audio_name']}_{audio_data['engine_mode']}_{audio_data['windows']}_{audio_data['music']}_{audio_data['occupants']}_{timestamp}.wav")
+                               f"{audio_data['audio_name']}_{audio_data['engine_mode']}_{audio_data['windows']}_{audio_data['music']}_{audio_data['occupants']}.wav")
 
     recorded_voice = sounddevice.rec(int(time_to_capture * sample_rate), samplerate=sample_rate, channels=channels)
     sounddevice.wait()
     write(output_file, sample_rate, recorded_voice)
 
+
+def vayyar_data():
+    from get_vayyar import config_vayyar, get_vayyar_data
+    config_vayyar()
+
+    path_vayyar = path_rgb.replace(sensor_2, 'vayyar').replace('driver_face', 'occupant')
+    os.makedirs(path_vayyar, exist_ok=True)
+
+    frame_count = 0
+    start_time = time.time()
+
+    while True:
+        file_name = file_constructor()
+        path_v = os.path.join(path_vayyar, file_name)
+
+        # construct the final file name
+        file_name_i = f'{path_v}_{frame_count:07d}.csv'
+        data_v = os.path.join(path_v, file_name_i)
+
+        get_vayyar_data(data_v)
+
+        frame_count += 1
+
+        if time.time() - start_time >= (0.25 * time_to_capture):
+            fps = frame_count / (time.time() - start_time)
+            print(time.time() - start_time)
+            print(f'Vayyar FPS: {fps}')
+            add_comments_vayyar('none', road_condition, traffic_condition, disturbance)
+            break
+
+
+vayyar = threading.Thread(target=vayyar_data)
+vayyar.start()
 
 audio_data_capture = threading.Thread(target=record_audio)
 audio_data_capture.start()

@@ -60,11 +60,25 @@ import cv2
 import tkinter as tk
 from tkinter import simpledialog
 import csv
+import sys
+
 
 load_previous = ''
 task_choice = ''
 lux_values = 0
-current_path = os.path.dirname(os.path.realpath(__file__))
+
+
+def get_working_directory():
+    if getattr(sys, 'frozen', False):
+        # If the application is frozen, use this path
+        current_path = os.path.dirname(sys.executable)
+    else:
+        # If not frozen, use this path
+        current_path = os.path.dirname(os.path.realpath(__file__))
+    return current_path
+
+
+current_path = get_working_directory()
 os.makedirs(os.path.join(current_path, 'configs'), exist_ok=True)
 
 
@@ -298,7 +312,6 @@ def initialize_details(sensor_name=None):
         user_configuration['run'] += 1
         with open(details_file, 'w') as file:
             json.dump(user_configuration, file)
-
     # Store the data in this directory
     destination_dir = os.path.join(current_path, 'datafolder', task_and_sensor_info["task"],
                                    task_and_sensor_info["sensor"],
@@ -322,6 +335,54 @@ def file_constructor():
                  f'_{user_configuration["run"]:02d}')
 
     return file_name
+
+
+def add_comments_vayyar(content, road_condition, traffic_condition, electronic_disturbance):
+    t = str(time.time())
+    t_stamp = t.replace('.', '-')
+    meta_file = 'metadata_v1.csv'
+    meta_path = os.path.join(current_path, 'metadata')
+    os.makedirs(meta_path, exist_ok=True)
+
+    if not os.path.exists(os.path.join(meta_path, meta_file)):
+        with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
+            csv_writer = csv.writer(meta_csv)
+            csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+            csv_writer.writerow(['occupant',
+                                 'vayyar',
+                                 datetime.datetime.now().date(),
+                                 t_stamp,
+                                 user_configuration['name'],
+                                 user_configuration['contact_number'],
+                                 user_configuration['location'],
+                                 user_configuration['gender'],
+                                 user_configuration['age'],
+                                 user_configuration['spectacles'],
+                                 user_configuration['run'],
+                                 road_condition,
+                                 traffic_condition,
+                                 electronic_disturbance,
+                                 content])
+
+    else:
+        with open(os.path.join(meta_path, meta_file), 'a', newline='') as meta_csv:
+            csv_writer = csv.writer(meta_csv)
+            csv_writer.writerow(['occupant',
+                                 'vayyar',
+                                 datetime.datetime.now().date(),
+                                 t_stamp,
+                                 user_configuration['name'],
+                                 user_configuration['contact_number'],
+                                 user_configuration['location'],
+                                 user_configuration['gender'],
+                                 user_configuration['age'],
+                                 user_configuration['spectacles'],
+                                 user_configuration['run'],
+                                 road_condition,
+                                 traffic_condition,
+                                 electronic_disturbance,
+                                 content])
 
 
 def add_comments(content, road_condition, traffic_condition, electronic_disturbance):
@@ -450,8 +511,11 @@ def get_audio_configuration():
             windows = 'closed' if audio_bit_user_input[1] == '1' else 'open'
             music = 'music_on' if audio_bit_user_input[2] == '1' else 'music_off'
             occupants = audio_bit_user_input[3]  # Directly take the number of occupants from input
+            t = str(time.time())
+            time_stamp = t.replace('.', '-')
+
             return {
-                'audio_name': time.time(),
+                'audio_name': time_stamp,
                 'engine_mode': engine_mode,
                 'windows': windows,
                 'music': music,
