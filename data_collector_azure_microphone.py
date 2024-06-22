@@ -156,6 +156,14 @@ if annotations_flag:
         counter += 1
 
 
+def save_image_intel(filename, img):
+    # check file extension and save accordingly
+    if file_extension != 'npy':
+        cv2.imwrite(filename, img)
+    else:
+        np.save(filename, img)
+
+
 def save_image(filename, img):
     # check file extension and save accordingly
     if file_extension != 'npy':
@@ -355,6 +363,67 @@ def vayyar_data():
             break
 
 
+def dashcam():
+    # Initialize other RGB camera
+    cam = cv2.VideoCapture(1)
+    cv2.namedWindow('INTEL Image', cv2.WINDOW_NORMAL)
+
+    path_intel = path_rgb.replace(sensor_2, 'intel_rgb')
+    os.makedirs(path_intel, exist_ok=True)
+
+    frame_count = 0
+    start_time = time.time()
+    while True:
+        ret_i, intel = cam.read()
+
+        if not ret_i:
+            continue
+
+        if rotate_flag:
+            # Rotate the frame by 180 degree
+            intel = cv2.rotate(intel, cv2.ROTATE_180)
+
+        # get the constructed file name, with lux values for Intel camera.
+        name = file_constructor()
+        path = os.path.join(path_intel, name)
+
+        # construct the final file name
+        file_name = f'{path}_{frame_count:07d}.{file_extension}'
+        data = os.path.join(path, file_name)
+
+        threading.Thread(target=save_image_intel, args=(data, intel)).start()
+
+        frame_count += 1
+
+        cv2.imshow('INTEL Image', intel)
+
+        if cv2.waitKey(1) == ord('q'):
+            break
+
+        if time.time() - start_time >= time_to_capture:
+            break
+
+
+def get_imu():
+    from get_imu import create_csv, imu_data
+    import initializer
+
+    path_imu = os.path.join(initializer.current_path, imu_data)
+    os.makedirs(path_imu, exist_ok=True)
+
+    name = file_constructor()
+    data = os.path.join(path_imu, name)
+    filename = f'{data}_0000000.csv'
+
+    create_csv(filename)
+    while True:
+        imu_data(filename)
+
+        start_time = time.time()
+        if time.time() - start_time >= time_to_capture:
+            break
+
+
 vayyar = threading.Thread(target=vayyar_data)
 vayyar.start()
 
@@ -363,3 +432,6 @@ audio_data_capture.start()
 
 azure_data_capture = threading.Thread(target=azure_data)
 azure_data_capture.start()
+
+dash_cam = threading.Thread(target=dashcam)
+dash_cam.start()
