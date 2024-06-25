@@ -83,6 +83,9 @@ disturbance = 'None'
 
 flag = 1
 
+vayyar_fps = 0.0
+dash_fps = 0.0
+
 sl_no = 1  # Starting serial number
 
 # Create variables based on user inputs
@@ -303,9 +306,8 @@ def azure_data():
 
             if time.time() - start_time >= time_to_capture:
                 fps = frame_count / (time.time() - start_time)
-                print(time.time() - start_time)
-                print(f'FPS: {fps}')
-                comment = input('Enter Comments:')
+                print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
+                comment = input('\n\nEnter Comments:')
                 device.close()
                 add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
                 exit()
@@ -336,6 +338,7 @@ def record_audio(sample_rate=44100, channels=1):
 
 
 def vayyar_data():
+    global vayyar_fps
     from get_vayyar import config_vayyar, get_vayyar_data
     config_vayyar()
 
@@ -358,15 +361,14 @@ def vayyar_data():
         frame_count += 1
 
         if time.time() - start_time >= (0.25 * time_to_capture):
-            fps = frame_count / (time.time() - start_time)
-            print(time.time() - start_time)
-            print(f'Vayyar FPS: {fps}')
-            add_comments_all('occupant', 'vayyar', 'none', fps, time_to_capture, road_condition, traffic_condition,
+            vayyar_fps = frame_count / (time.time() - start_time)
+            add_comments_all('occupant', 'vayyar', 'none', vayyar_fps, time_to_capture, road_condition, traffic_condition,
                              disturbance)
             break
 
 
 def dashcam():
+    global dash_fps
     # Initialize other RGB camera
     cam = cv2.VideoCapture(1)
     cv2.namedWindow('INTEL Image', cv2.WINDOW_NORMAL)
@@ -404,10 +406,8 @@ def dashcam():
             break
 
         if time.time() - start_time >= time_to_capture:
-            fps = frame_count / (time.time() - start_time)
-            print(time.time() - start_time)
-            print(f'Dashcam FPS: {fps}')
-            add_comments_all('occupant', 'vayyar', 'none', fps, time_to_capture, road_condition, traffic_condition,
+            dash_fps = frame_count / (time.time() - start_time)
+            add_comments_all('occupant', 'vayyar', 'none', dash_fps, time_to_capture, road_condition, traffic_condition,
                              disturbance)
             break
 

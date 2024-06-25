@@ -47,4 +47,3 @@ while True:
         comment = input('Enter Comments:')
         add_comments(comment)
         exit()
-
