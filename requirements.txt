@@ -7,3 +7,5 @@ tqdm
 pyinstaller
 imagezmq
 sounddevice
+scipy
+websocket-client
