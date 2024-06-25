@@ -306,10 +306,11 @@ def azure_data():
 
             if time.time() - start_time >= time_to_capture:
                 fps = frame_count / (time.time() - start_time)
+                time.sleep(1)
                 print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
                 comment = input('\n\nEnter Comments:')
                 device.close()
-                add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+                add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -318,7 +319,7 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+            add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
             exit()
 
 

@@ -387,7 +387,7 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
                                  content])
 
 
-def add_comments(content, road_condition, traffic_condition, electronic_disturbance):
+def add_comments(content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
     meta_file = 'metadata_v1.csv'
@@ -410,6 +410,8 @@ def add_comments(content, road_condition, traffic_condition, electronic_disturba
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 fps,
+                                 toc,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
@@ -429,13 +431,15 @@ def add_comments(content, road_condition, traffic_condition, electronic_disturba
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 fps,
+                                 toc,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
                                  content])
 
 
-def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_disturbance, s1):
+def add_comments_ir_rgb(content, fps, toc, road_condition, traffic_condition, electronic_disturbance, s1):
     meta_file = 'metadata_v1.csv'
     meta_path = os.path.join(current_path, 'metadata')
     os.makedirs(meta_path, exist_ok=True)
@@ -459,6 +463,8 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
                                      user_configuration['age'],
                                      user_configuration['spectacles'],
                                      user_configuration['run'],
+                                     fps,
+                                     toc,
                                      road_condition,
                                      traffic_condition,
                                      electronic_disturbance,
@@ -482,6 +488,8 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
                                      user_configuration['age'],
                                      user_configuration['spectacles'],
                                      user_configuration['run'],
+                                     fps,
+                                     toc,
                                      road_condition,
                                      traffic_condition,
                                      electronic_disturbance,
