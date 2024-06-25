@@ -9,3 +9,5 @@ imagezmq
 sounddevice
 scipy
 websocket-client
+psutils
+shutils
