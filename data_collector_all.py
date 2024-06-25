@@ -306,7 +306,7 @@ def azure_data():
 
             if time.time() - start_time >= time_to_capture:
                 fps = frame_count / (time.time() - start_time)
-                time.sleep(1)
+                time.sleep(2)
                 print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
                 comment = input('\n\nEnter Comments:')
                 device.close()
@@ -408,7 +408,7 @@ def dashcam():
 
         if time.time() - start_time >= time_to_capture:
             dash_fps = frame_count / (time.time() - start_time)
-            add_comments_all('occupant', 'vayyar', 'none', dash_fps, time_to_capture, road_condition, traffic_condition,
+            add_comments_all('dashcam', 'intel_rgb', 'none', dash_fps, time_to_capture, road_condition, traffic_condition,
                              disturbance)
             break
 
