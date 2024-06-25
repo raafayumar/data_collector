@@ -381,11 +381,12 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 fps,
+                                 toc,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
                                  content])
-
 
 def add_comments(content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
