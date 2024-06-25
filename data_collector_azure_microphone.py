@@ -13,7 +13,7 @@
 """
 import initializer
 from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, \
-    get_audio_configuration, send_trigger, add_comments_vayyar
+    get_audio_configuration, send_trigger, add_comments_all
 import os
 import time
 import pykinect_azure as pykinect
@@ -25,7 +25,9 @@ from datetime import datetime
 import threading
 from rich.console import Console
 from rich.table import Table
+from open_application import check_application
 
+check_application()
 console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
@@ -41,7 +43,7 @@ number_of_subjects = 1
 class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
 
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = int(input('Please enter\nTime to capture in Seconds:'))
+time_to_capture = int(input('\nPlease enter\nTime to capture in Seconds:'))
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -359,7 +361,8 @@ def vayyar_data():
             fps = frame_count / (time.time() - start_time)
             print(time.time() - start_time)
             print(f'Vayyar FPS: {fps}')
-            add_comments_vayyar('none', road_condition, traffic_condition, disturbance)
+            add_comments_all('occupant', 'vayyar', 'none', fps, time_to_capture, road_condition, traffic_condition,
+                             disturbance)
             break
 
 
@@ -368,7 +371,7 @@ def dashcam():
     cam = cv2.VideoCapture(1)
     cv2.namedWindow('INTEL Image', cv2.WINDOW_NORMAL)
 
-    path_intel = path_rgb.replace(sensor_2, 'intel_rgb')
+    path_intel = path_rgb.replace(sensor_2, 'intel_rgb').replace('driver_face', 'dashcam')
     os.makedirs(path_intel, exist_ok=True)
 
     frame_count = 0
@@ -401,6 +404,11 @@ def dashcam():
             break
 
         if time.time() - start_time >= time_to_capture:
+            fps = frame_count / (time.time() - start_time)
+            print(time.time() - start_time)
+            print(f'Dashcam FPS: {fps}')
+            add_comments_all('occupant', 'vayyar', 'none', fps, time_to_capture, road_condition, traffic_condition,
+                             disturbance)
             break
 
 

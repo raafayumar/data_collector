@@ -337,7 +337,7 @@ def file_constructor():
     return file_name
 
 
-def add_comments_vayyar(content, road_condition, traffic_condition, electronic_disturbance):
+def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
     meta_file = 'metadata_v1.csv'
@@ -348,9 +348,9 @@ def add_comments_vayyar(content, road_condition, traffic_condition, electronic_d
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
-            csv_writer.writerow(['occupant',
-                                 'vayyar',
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+            csv_writer.writerow([task,
+                                 sensor,
                                  datetime.datetime.now().date(),
                                  t_stamp,
                                  user_configuration['name'],
@@ -360,6 +360,8 @@ def add_comments_vayyar(content, road_condition, traffic_condition, electronic_d
                                  user_configuration['age'],
                                  user_configuration['spectacles'],
                                  user_configuration['run'],
+                                 fps,
+                                 toc,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
@@ -368,8 +370,8 @@ def add_comments_vayyar(content, road_condition, traffic_condition, electronic_d
     else:
         with open(os.path.join(meta_path, meta_file), 'a', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
-            csv_writer.writerow(['occupant',
-                                 'vayyar',
+            csv_writer.writerow([task,
+                                 sensor,
                                  datetime.datetime.now().date(),
                                  t_stamp,
                                  user_configuration['name'],
@@ -396,7 +398,7 @@ def add_comments(content, road_condition, traffic_condition, electronic_disturba
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             csv_writer.writerow([task_and_sensor_info["task"],
                                  task_and_sensor_info["sensor"],
                                  datetime.datetime.now().date(),
@@ -442,7 +444,7 @@ def add_comments_ir_rgb(content, road_condition, traffic_condition, electronic_d
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             for s in s1:
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
