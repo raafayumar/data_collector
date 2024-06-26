@@ -18,7 +18,11 @@ import time
 import pykinect_azure as pykinect
 import cv2
 import numpy as np
-import keyboard
+import threading
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
 rotate_flag = 1
@@ -29,11 +33,8 @@ annotations_flag = 0
 # number of bounding boxes in 1 frame.
 number_of_subjects = 1
 
-# Replace with your actual class labels
-class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
-
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = 10
+time_to_capture = int(input('\nPlease enter\nTime to capture in Seconds:'))
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -55,21 +56,40 @@ sensor_1 = 'azure_ir'
 sensor_2 = 'azure_rgb'
 
 path_ir = initialize_details(sensor_1)
+
 path_rgb = path_ir.replace(sensor_1, sensor_2)
 os.makedirs(path_rgb, exist_ok=True)
 
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
 
+temp = path_ir.split('\\')
+task = temp[temp.index('datafolder') + 1]
+
+if task == 'driver_face':
+    class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
+
+elif task == 'seat_belt':
+    class_names = ['with_sb', 'without_sb', 'twisted_sb', 'back_sb', 'oblap_sb', 'obchest_sb', 'oblap_bsb', 'obchest_bsb',
+                   'reflect_sb',
+                   'tape_sb', 'loose_sb']
+else:
+    class_names = ['Add your classes!']
+
+road_condition = traffic_condition = road_condition_text = traffic_condition_text = disturbance = 'None'
+
 s_list = [sensor_1, sensor_2]
 
-road_condition = input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n')
-
-traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
-
-disturbance = ''
-
 if annotations_flag:
+    road_condition = input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n')
+    traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
+
+    road_conditions = {'0': 'Good road', '1': 'Moderate road', '2': 'Bad road'}
+    traffic_conditions = {'0': 'Mild traffic', '1': 'Moderate traffic', '2': 'Heavy traffic'}
+
+    road_condition_text = road_conditions.get(road_condition, 'Unknown road condition')
+    traffic_condition_text = traffic_conditions.get(traffic_condition, 'Unknown traffic condition')
+
     ir_annotation_string = []
     counter = 0
     while counter < number_of_subjects:
@@ -80,10 +100,11 @@ if annotations_flag:
         # Get 1 IR frame for annotation
         capture_anno = device.update()
         ret, ir = capture_anno.get_ir_image()
-        ir = ir.astype(np.int32)
 
         if not ret:
-            pass
+            continue
+
+        ir = ir.astype(np.int32)
 
         if rotate_flag:
             # Rotate the frame by 180 degree
@@ -110,7 +131,7 @@ if annotations_flag:
         ret, rgb = capture_anno.get_color_image()
 
         if not ret:
-            pass
+            continue
 
         if rotate_flag:
             # Rotate the frame by 180 degree
@@ -123,34 +144,35 @@ if annotations_flag:
         counter += 1
 
 
-# Function to toggle the flag state
-def toggle_flag():
-    global disturbance
-    disturbance = time.time() if disturbance == 0 else 0
-
-
-keyboard.on_press_key('ctrl', lambda _: toggle_flag())
+def save_image(filename, img):
+    # check file extension and save accordingly
+    if file_extension != 'npy':
+        cv2.imwrite(filename, img)
+    else:
+        np.save(filename, img)
 
 
 def azure_data():
     frame_count = 0
-    cv2.namedWindow('Infrared Image', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
+    sl_no = 1
     start_time = time.time()  # set timer
-
     while True:
+        table = Table(title="Details of the run")
+
         # Get frames from azure.
         capture = device.update()
 
         # Get the infrared image
         ret, ir_image = capture.get_ir_image()
-        ir_image = ir_image.astype(np.int32)
-
         # Get RGB image
         ret_rgb, rgb_image = capture.get_color_image()
 
         if not ret or not ret_rgb:
             continue
+
+        ir_image = ir_image.astype(np.int32)
 
         # get the constructed file name, with lux values for Azure IR
         name_i = file_constructor()
@@ -166,9 +188,43 @@ def azure_data():
         # construct the final file name
         file_name_r = f'{path_r}_{frame_count:07d}.{file_extension}'
         data_r = os.path.join(path_r, file_name_r)
+        time_remaining = str(int(time_to_capture - (time.time() - start_time)))
 
-        print(data_i)
-        print(data_r)
+        parts = str(os.path.split(path_i)[-1]).split('_')
+        s_list_formatted = "\n".join([str(item) for item in s_list])
+        lux_value = parts[7]
+        name = parts[1]
+        run = parts[-1]
+
+        if parts[7] == '00000':
+            lux_value = 'Check LUX'
+
+        table.add_column("Sl No", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Subject", justify="right", style="cyan")
+        table.add_column("Time Remaining", justify="right", style="cyan")
+        table.add_column("Road Condition", justify="right", style="cyan")
+        table.add_column("Traffic Condition", justify="right", style="cyan")
+        table.add_column("Sensors", justify="right", style="cyan")
+        table.add_column("Lux", justify="right", style="red")
+        table.add_column("Run", justify="right", style="cyan")
+        table.add_column("Frame", justify="right", style="cyan")
+
+        table.add_row(
+            str(sl_no),
+            str(name),
+            time_remaining,
+            road_condition_text,
+            traffic_condition_text,
+            str(s_list_formatted),
+            str(lux_value),
+            str(run),
+            str(frame_count)
+        )
+
+        console.clear()
+        console.print(table)
+
+        sl_no += 1
 
         if rotate_flag:
             # Rotate the frame by 180 degree
@@ -180,13 +236,8 @@ def azure_data():
         cv2.imshow('IR Image', adjusted_ir)
         cv2.imshow('RGB Image', rgb_image)
 
-        # check file extension and save accordingly
-        if file_extension != 'npy':
-            cv2.imwrite(data_i, adjusted_ir)
-            cv2.imwrite(data_r, rgb_image)
-        else:
-            np.save(data_i, ir_image)
-            np.save(data_r, rgb_image)
+        threading.Thread(target=save_image, args=(data_i, adjusted_ir)).start()
+        threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
 
         if annotations_flag:
             anno_file = f'{path_r}_{frame_count:07d}.{file_extension_annotations}'
@@ -222,7 +273,9 @@ def azure_data():
                 print(time.time() - start_time)
                 print(f'FPS: {fps}')
                 comment = input('Enter Comments:')
-                add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+                device.close()
+                add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance,
+                                    s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -231,7 +284,8 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments_ir_rgb(comment, road_condition, traffic_condition, disturbance, s_list)
+            device.close()
+            add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
             exit()
 
 

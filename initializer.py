@@ -388,6 +388,7 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
                                  electronic_disturbance,
                                  content])
 
+
 def add_comments(content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
