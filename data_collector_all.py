@@ -21,7 +21,7 @@ import cv2
 import numpy as np
 import sounddevice
 from scipy.io.wavfile import write
-from datetime import datetime
+import datetime
 import threading
 from rich.console import Console
 from rich.table import Table
@@ -31,7 +31,7 @@ check_application()
 console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 0
+rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
 annotations_flag = 0
@@ -310,7 +310,7 @@ def azure_data():
                 print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
                 comment = input('\n\nEnter Comments:')
                 device.close()
-                add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
+                add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -325,7 +325,7 @@ def azure_data():
 
 def record_audio(sample_rate=44100, channels=1):
     # Create folder based on the current date
-    date_folder = datetime.now().strftime("%Y-%m-%d")
+    date_folder = datetime.datetime.now().date()
     output_directory = os.path.join(initializer.current_path, "audio_data", date_folder)
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -363,7 +363,7 @@ def vayyar_data():
 
         if time.time() - start_time >= (0.25 * time_to_capture):
             vayyar_fps = frame_count / (time.time() - start_time)
-            add_comments_all('occupant', 'vayyar', 'none', vayyar_fps, time_to_capture, road_condition, traffic_condition,
+            add_comments_all('occupant', 'vayyar', 'None', vayyar_fps, time_to_capture, 'None', road_condition, traffic_condition,
                              disturbance)
             break
 
@@ -408,7 +408,7 @@ def dashcam():
 
         if time.time() - start_time >= time_to_capture:
             dash_fps = frame_count / (time.time() - start_time)
-            add_comments_all('dashcam', 'intel_rgb', 'none', dash_fps, time_to_capture, road_condition, traffic_condition,
+            add_comments_all('dashcam', 'intel_rgb', 'None', dash_fps, time_to_capture, 'None', road_condition, traffic_condition,
                              disturbance)
             break
 
@@ -416,8 +416,9 @@ def dashcam():
 def get_imu():
     from get_imu import create_csv, imu_data
     import initializer
+    datefolder = datetime.datetime.now().date()
 
-    path_imu = os.path.join(initializer.current_path, imu_data)
+    path_imu = os.path.join(initializer.current_path, 'imu_data', datefolder)
     os.makedirs(path_imu, exist_ok=True)
 
     name = file_constructor()
@@ -444,3 +445,6 @@ azure_data_capture.start()
 
 dash_cam = threading.Thread(target=dashcam)
 dash_cam.start()
+
+imu = threading.Thread(target=get_imu)
+imu.start()

@@ -28,10 +28,10 @@ console = Console()
 rotate_flag = 1
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 0
+annotations_flag = 1
 
 # number of bounding boxes in 1 frame.
-number_of_subjects = 1
+number_of_subjects = 2
 
 # Time in sec, if 0 then use 'S' to stop the code
 time_to_capture = int(input('\nPlease enter\nTime to capture in Seconds:'))
@@ -80,7 +80,7 @@ road_condition = traffic_condition = road_condition_text = traffic_condition_tex
 
 s_list = [sensor_1, sensor_2]
 
-if annotations_flag:
+if not annotations_flag:
     road_condition = input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n')
     traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
 
@@ -90,6 +90,7 @@ if annotations_flag:
     road_condition_text = road_conditions.get(road_condition, 'Unknown road condition')
     traffic_condition_text = traffic_conditions.get(traffic_condition, 'Unknown traffic condition')
 
+if annotations_flag:
     ir_annotation_string = []
     counter = 0
     while counter < number_of_subjects:
@@ -154,6 +155,7 @@ def save_image(filename, img):
 
 def azure_data():
     frame_count = 0
+    class_num = 'None'
     cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
     cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
     sl_no = 1
@@ -244,11 +246,26 @@ def azure_data():
             anno_data = os.path.join(path_r, anno_file)
             with open(anno_data, 'w') as file:
                 if type(rgb_annotation_string) == list:
+                    previous_class_name = None
+                    final_string = ''
+
                     for i in range(0, number_of_subjects):
-                        # Write annotation data to the file
-                        file.write(rgb_annotation_string[i] + '\n')
+                        temp = rgb_annotation_string[i].split(" ")
+                        current_class_name = class_names[int(temp[0])]
+
+                        if previous_class_name is not None:
+                            concatenated_class_name = previous_class_name + '-' + current_class_name
+                            final_string += concatenated_class_name + ' '
+                        else:
+                            final_string += current_class_name + ' '
+
+                        previous_class_name = current_class_name
+
+                    # Trim the trailing space
+                    class_num = final_string.strip()
                 else:
                     file.write(rgb_annotation_string)
+                    class_num = class_num[int(rgb_annotation_string[0])]
 
         if annotations_flag:
             anno_file1 = f'{path_i}_{frame_count:07d}.{file_extension_annotations}'
@@ -274,7 +291,7 @@ def azure_data():
                 print(f'FPS: {fps}')
                 comment = input('Enter Comments:')
                 device.close()
-                add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance,
+                add_comments_ir_rgb(comment, class_num, fps, time_to_capture, road_condition, traffic_condition, disturbance,
                                     s_list)
                 exit()
 
@@ -285,7 +302,7 @@ def azure_data():
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
             device.close()
-            add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
+            add_comments_ir_rgb(comment, class_num, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
             exit()
 
 

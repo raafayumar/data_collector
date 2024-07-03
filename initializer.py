@@ -337,7 +337,7 @@ def file_constructor():
     return file_name
 
 
-def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
+def add_comments_all(task, sensor, content, fps, toc, classes, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
     meta_file = 'metadata_v1.csv'
@@ -348,7 +348,7 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Classes', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             csv_writer.writerow([task,
                                  sensor,
                                  datetime.datetime.now().date(),
@@ -362,6 +362,7 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
                                  user_configuration['run'],
                                  fps,
                                  toc,
+                                 classes,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
@@ -383,13 +384,14 @@ def add_comments_all(task, sensor, content, fps, toc, road_condition, traffic_co
                                  user_configuration['run'],
                                  fps,
                                  toc,
+                                 classes,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
                                  content])
 
 
-def add_comments(content, fps, toc, road_condition, traffic_condition, electronic_disturbance):
+def add_comments(content, classes, fps, toc, road_condition, traffic_condition, electronic_disturbance):
     t = str(time.time())
     t_stamp = t.replace('.', '-')
     meta_file = 'metadata_v1.csv'
@@ -400,7 +402,7 @@ def add_comments(content, fps, toc, road_condition, traffic_condition, electroni
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Classes', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             csv_writer.writerow([task_and_sensor_info["task"],
                                  task_and_sensor_info["sensor"],
                                  datetime.datetime.now().date(),
@@ -414,6 +416,7 @@ def add_comments(content, fps, toc, road_condition, traffic_condition, electroni
                                  user_configuration['run'],
                                  fps,
                                  toc,
+                                 classes,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
@@ -435,13 +438,14 @@ def add_comments(content, fps, toc, road_condition, traffic_condition, electroni
                                  user_configuration['run'],
                                  fps,
                                  toc,
+                                 classes,
                                  road_condition,
                                  traffic_condition,
                                  electronic_disturbance,
                                  content])
 
 
-def add_comments_ir_rgb(content, fps, toc, road_condition, traffic_condition, electronic_disturbance, s1):
+def add_comments_ir_rgb(content, classes, fps, toc, road_condition, traffic_condition, electronic_disturbance, s1):
     meta_file = 'metadata_v1.csv'
     meta_path = os.path.join(current_path, 'metadata')
     os.makedirs(meta_path, exist_ok=True)
@@ -450,7 +454,7 @@ def add_comments_ir_rgb(content, fps, toc, road_condition, traffic_condition, el
         with open(os.path.join(meta_path, meta_file), 'w', newline='') as meta_csv:
             csv_writer = csv.writer(meta_csv)
             csv_writer.writerow(['Task', 'Sensor', 'Date', 'Timestamp', 'Name', 'Contact_No',
-                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
+                                 'Location', 'Gender', 'Age', 'Spectacles', 'Run', 'FPS', 'Time_to_capture', 'Classes', 'Road', 'Traffic', 'disturbance_TT', 'Comments', 'Trail_flag', 'Test_flag'])
             for s in s1:
                 t = str(time.time())
                 t_stamp = t.replace('.', '-')
@@ -467,6 +471,7 @@ def add_comments_ir_rgb(content, fps, toc, road_condition, traffic_condition, el
                                      user_configuration['run'],
                                      fps,
                                      toc,
+                                     classes,
                                      road_condition,
                                      traffic_condition,
                                      electronic_disturbance,
@@ -492,6 +497,7 @@ def add_comments_ir_rgb(content, fps, toc, road_condition, traffic_condition, el
                                      user_configuration['run'],
                                      fps,
                                      toc,
+                                     classes,
                                      road_condition,
                                      traffic_condition,
                                      electronic_disturbance,
