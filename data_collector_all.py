@@ -325,7 +325,7 @@ def azure_data():
 
 def record_audio(sample_rate=44100, channels=1):
     # Create folder based on the current date
-    date_folder = datetime.datetime.now().date()
+    date_folder = str(datetime.datetime.now().date())
     output_directory = os.path.join(initializer.current_path, "audio_data", date_folder)
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -416,7 +416,7 @@ def dashcam():
 def get_imu():
     from get_imu import create_csv, imu_data
     import initializer
-    datefolder = datetime.datetime.now().date()
+    datefolder = str(datetime.datetime.now().date())
 
     path_imu = os.path.join(initializer.current_path, 'imu_data', datefolder)
     os.makedirs(path_imu, exist_ok=True)
@@ -426,10 +426,11 @@ def get_imu():
     filename = f'{data}_0000000.csv'
 
     create_csv(filename)
+    start_time = time.time()
     while True:
         imu_data(filename)
 
-        start_time = time.time()
+        
         if time.time() - start_time >= time_to_capture:
             break
 
