@@ -300,7 +300,8 @@ def azure_data():
         # Stop after 10 sec
         if time_to_capture != 0:
             if time.time() - start_time >= (time_to_capture / 2) and flag:
-                disturbance = time.time()
+                t = str(time.time())
+                disturbance = t.replace('.', '-')
                 send_trigger()
                 flag = 0
 
