@@ -75,9 +75,9 @@ beta = 0.09  # Brightness control
 
 s_list = [sensor_1, sensor_2]
 
-road_condition = input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n')
+road_condition = str(input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n'))
 
-traffic_condition = input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n')
+traffic_condition = str(input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n'))
 
 disturbance = 'None'
 
@@ -86,6 +86,8 @@ flag = 1
 vayyar_fps = 0.0
 dash_fps = 0.0
 
+classes = 0
+conditions = int(road_condition + traffic_condition)
 sl_no = 1  # Starting serial number
 
 # Create variables based on user inputs
@@ -182,7 +184,7 @@ def azure_data():
     frame_count = 0
     sl_no = 1
     cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
 
     start_time = time.time()  # set timer
     while True:
@@ -203,7 +205,7 @@ def azure_data():
         ir_image = ir_image.astype(np.int32)
 
         # get the constructed file name, with lux values for Azure IR
-        name_i = file_constructor()
+        name_i = file_constructor(conditions, classes)
         path_i = os.path.join(path_ir, name_i)
 
         # construct the final file name
@@ -265,7 +267,7 @@ def azure_data():
         # call convertScaleAbs function, just for visualisation
         adjusted_ir = cv2.convertScaleAbs(ir_image, alpha=alpha, beta=beta)
         cv2.imshow('IR Image', adjusted_ir)
-        cv2.imshow('RGB Image', rgb_image)
+        # cv2.imshow('RGB Image', rgb_image)
 
         threading.Thread(target=save_image, args=(data_i, adjusted_ir)).start()
         threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
@@ -325,18 +327,22 @@ def azure_data():
 
 
 def record_audio(sample_rate=44100, channels=1):
-    # Create folder based on the current date
-    date_folder = str(datetime.datetime.now().date())
-    output_directory = os.path.join(initializer.current_path, "audio_data", date_folder)
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+    path_audio = path_rgb.replace(sensor_2, 'mic').replace('driver_face', 'audio')
+    os.makedirs(path_audio, exist_ok=True)
 
-    output_file = os.path.join(output_directory,
-                               f"{audio_data['audio_name']}_{audio_data['engine_mode']}_{audio_data['windows']}_{audio_data['music']}_{audio_data['occupants']}.wav")
+    file_name = file_constructor(conditions, int(audio_data['bits']))
+    path_v = os.path.join(path_audio, file_name)
+
+    # construct the final file name
+    file_name_i = f'{path_v}_0000000.wav'
+    output_file = os.path.join(path_v, file_name_i)
 
     recorded_voice = sounddevice.rec(int(time_to_capture * sample_rate), samplerate=sample_rate, channels=channels)
     sounddevice.wait()
     write(output_file, sample_rate, recorded_voice)
+    add_comments_all('audio', 'mic', 'None', '0', time_to_capture, str(audio_data['bits']), road_condition,
+                     traffic_condition,
+                     disturbance)
 
 
 def vayyar_data():
@@ -351,7 +357,7 @@ def vayyar_data():
     start_time = time.time()
 
     while True:
-        file_name = file_constructor()
+        file_name = file_constructor(conditions, classes)
         path_v = os.path.join(path_vayyar, file_name)
 
         # construct the final file name
@@ -391,7 +397,7 @@ def dashcam():
             intel = cv2.rotate(intel, cv2.ROTATE_180)
 
         # get the constructed file name, with lux values for Intel camera.
-        name = file_constructor()
+        name = file_constructor(conditions, classes)
         path = os.path.join(path_intel, name)
 
         # construct the final file name
@@ -422,7 +428,7 @@ def get_imu():
     path_imu = os.path.join(initializer.current_path, 'imu_data', datefolder)
     os.makedirs(path_imu, exist_ok=True)
 
-    name = file_constructor()
+    name = file_constructor(conditions, classes)
     data = os.path.join(path_imu, name)
     filename = f'{data}_0000000.csv'
 
@@ -431,7 +437,6 @@ def get_imu():
     while True:
         imu_data(filename)
 
-        
         if time.time() - start_time >= time_to_capture:
             break
 
