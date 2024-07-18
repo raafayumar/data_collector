@@ -1,9 +1,9 @@
 import csv
-import time
 from struct import unpack_from
 import json
 import numpy as np
 from websocket import create_connection
+import threading
 
 DTYPES = {
     0: np.int8,
@@ -97,7 +97,7 @@ def get_vayyar_data(path):
     data = to_message(buffer)
 
     if data['ID'] == 'BINARY_DATA':
-        save_to_csv(data['Payload'], path)  # Save data to CSV with unique frame ID
+        threading.Thread(target=save_to_csv, args=(data['Payload'], path)).start()
         frame_id += 1
         listener.send(json.dumps({'Type': 'QUERY', 'ID': 'BINARY_DATA'}))
 
