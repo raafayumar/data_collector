@@ -179,6 +179,46 @@ def save_image(filename, img):
         np.save(filename, img)
 
 
+def print_table(path, time_remaining, sl_no,  frame_count):
+    table = Table(title="Details of the run")
+
+    parts = str(os.path.split(path)[-1]).split('_')
+    s_list_formatted = "\n".join([str(item) for item in s_list])
+    lux_value = parts[7]
+    name = parts[1]
+    run = parts[-1]
+
+    if parts[7] == '00000':
+        lux_value = 'Check LUX'
+
+    table.add_column("Sl No", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Subject", justify="right", style="cyan")
+    table.add_column("Time Remaining", justify="right", style="cyan")
+    table.add_column("Road Condition", justify="right", style="cyan")
+    table.add_column("Traffic Condition", justify="right", style="cyan")
+    table.add_column("Audio Config bit", justify="right", style="cyan")
+    table.add_column("Sensors", justify="right", style="cyan")
+    table.add_column("Lux", justify="right", style="red")
+    table.add_column("Run", justify="right", style="cyan")
+    table.add_column("Frame", justify="right", style="cyan")
+
+    table.add_row(
+        str(sl_no),
+        str(name),
+        time_remaining,
+        road_condition_text,
+        traffic_condition_text,
+        str(audio_data['bits']),
+        str(s_list_formatted),
+        str(lux_value),
+        str(run),
+        str(frame_count)
+    )
+
+    console.clear()
+    console.print(table)
+
+
 def azure_data():
     global flag, disturbance
     frame_count = 0
@@ -188,8 +228,6 @@ def azure_data():
 
     start_time = time.time()  # set timer
     while True:
-        table = Table(title="Details of the run")
-
         # Get frames from azure.
         capture = device.update()
 
@@ -221,41 +259,7 @@ def azure_data():
 
         time_remaining = str(int(time_to_capture - (time.time() - start_time)))
 
-        parts = str(os.path.split(path_i)[-1]).split('_')
-        s_list_formatted = "\n".join([str(item) for item in s_list])
-        lux_value = parts[7]
-        name = parts[1]
-        run = parts[-1]
-
-        if parts[7] == '00000':
-            lux_value = 'Check LUX'
-
-        table.add_column("Sl No", justify="right", style="cyan", no_wrap=True)
-        table.add_column("Subject", justify="right", style="cyan")
-        table.add_column("Time Remaining", justify="right", style="cyan")
-        table.add_column("Road Condition", justify="right", style="cyan")
-        table.add_column("Traffic Condition", justify="right", style="cyan")
-        table.add_column("Audio Config bit", justify="right", style="cyan")
-        table.add_column("Sensors", justify="right", style="cyan")
-        table.add_column("Lux", justify="right", style="red")
-        table.add_column("Run", justify="right", style="cyan")
-        table.add_column("Frame", justify="right", style="cyan")
-
-        table.add_row(
-            str(sl_no),
-            str(name),
-            time_remaining,
-            road_condition_text,
-            traffic_condition_text,
-            str(audio_data['bits']),
-            str(s_list_formatted),
-            str(lux_value),
-            str(run),
-            str(frame_count)
-        )
-
-        console.clear()
-        console.print(table)
+        threading.Thread(target=print_table, args=(path_i, time_remaining, sl_no, frame_count)).start()
 
         sl_no += 1
 
@@ -303,7 +307,8 @@ def azure_data():
         if time_to_capture != 0:
             if time.time() - start_time >= (time_to_capture / 2) and flag:
                 t = str(time.time())
-                disturbance = t.replace('.', '-')
+                temp = t.replace('.', '-')
+                disturbance = temp+'/'+str(frame_count)
                 send_trigger()
                 flag = 0
 
@@ -322,7 +327,8 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments_ir_rgb(comment, fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
+            add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition, traffic_condition, disturbance,
+                                s_list)
             exit()
 
 
