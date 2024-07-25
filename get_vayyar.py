@@ -57,10 +57,14 @@ def config_vayyar():
             'FlowCfg.save_dir': r'',
             'FlowCfg.read_from_file': 0.0,
             'FlowCfg.save_to_file': 0.0,
-            'ExternalData.VAYYAR_IGNITION': 0,
-            'ExternalData.VAYYAR_ENGINE': 0,
-            'ExternalData.VAYYAR_SB1': 0,
-            'ExternalData.VAYYAR_DOOR1': 0
+            'ExternalData.VAYYAR_IGNITION': 1,
+            'ExternalData.VAYYAR_ENGINE': 1,
+            'ExternalData.VAYYAR_SB1': 1,
+            'ExternalData.VAYYAR_SB2': 1,
+            'ExternalData.VAYYAR_DOOR1': 0,
+            'ExternalData.VAYYAR_DOOR2': 0,
+            'ExternalData.VAYYAR_DOOR3': 0,
+            'ExternalData.VAYYAR_DOOR4': 0
         }
     }))
 
@@ -98,11 +102,14 @@ def get_vayyar_data(path):
 
     if data['ID'] == 'BINARY_DATA':
         threading.Thread(target=save_to_csv, args=(data['Payload'], path)).start()
+
         frame_id += 1
         listener.send(json.dumps({'Type': 'QUERY', 'ID': 'BINARY_DATA'}))
 
     if data['ID'] == 'GET_STATUS':
         print(data['Payload']['status'])
+
+    return data['Payload']['Vayyar_InCarLsInSeat']
 
 
 def save_to_csv(data, file_path):

@@ -85,14 +85,14 @@ class AnnotationTool:
 
                 frame_path = os.path.join(self.frames_dir, self.frame_files[0])
                 annotations = self.metadata.loc[0, 'Previous Annotations']
-                self.display_image(cv2.imread(frame_path), annotations, self.frame_files[0])
+                self.display_image(cv2.imread(frame_path), annotations, self.frame_files[0], self.current_frame_index)
 
             else:
                 messagebox.showwarning("Warning", "No frames found in the directory.")
         else:
             messagebox.showerror("Error", "Frames directory not selected.")
 
-    def display_image(self, frame, annotations, filename):
+    def display_image(self, frame, annotations, filename, frames):
         self.count += 1
         for annotation in annotations:
             class_id = annotation[0]
@@ -115,7 +115,7 @@ class AnnotationTool:
         image = Image.fromarray(frame)
         self.photo = ImageTk.PhotoImage(image)
         self.image_label.configure(image=self.photo)
-        self.progress_label.config(text=f"Current frame: {self.count}")
+        self.progress_label.config(text=f"Current frame: {frames}")
         annotation_text = '\n'.join([f"Class: {self.classes[a[0]]}, BBox: {a[1:]}" for a in annotations])
         self.annotation_label.config(text=f"Annotations: {annotation_text}\nFrame: {filename}")
 
@@ -192,20 +192,23 @@ class AnnotationTool:
                                                os.path.splitext(self.frame_files[self.current_frame_index])[0] + '.txt')
                 self.change_class_handler(annotation_file, new_class)
         elif event.keysym == 'Right':
-            self.current_frame_index += 1
-            if self.current_frame_index < len(self.frame_files):
+            if self.current_frame_index < len(self.frame_files) - 1:
+                self.current_frame_index += 1
+                # self.count += 1  # Increment the count when moving forward
                 frame_path = os.path.join(self.frames_dir, self.frame_files[self.current_frame_index])
                 annotations = self.metadata.loc[self.current_frame_index, 'Previous Annotations']
-                self.display_image(cv2.imread(frame_path), annotations, self.frame_files[self.current_frame_index])
+                self.display_image(cv2.imread(frame_path), annotations, self.frame_files[self.current_frame_index], self.current_frame_index)
             else:
                 messagebox.showinfo("Info", f"{self.corrected_count} files corrected")
                 messagebox.showinfo("Info", "All frames processed.")
                 self.master.quit()
-        elif event.keysym == 'Left' and self.current_frame_index > 0:
-            self.current_frame_index -= 1
-            frame_path = os.path.join(self.frames_dir, self.frame_files[self.current_frame_index])
-            annotations = self.metadata.loc[self.current_frame_index, 'Previous Annotations']
-            self.display_image(cv2.imread(frame_path), annotations, self.frame_files[self.current_frame_index])
+        elif event.keysym == 'Left':
+            if self.current_frame_index > 0:
+                self.current_frame_index -= 1
+                self.count -= 1  # Decrement the count when moving backward
+                frame_path = os.path.join(self.frames_dir, self.frame_files[self.current_frame_index])
+                annotations = self.metadata.loc[self.current_frame_index, 'Previous Annotations']
+                self.display_image(cv2.imread(frame_path), annotations, self.frame_files[self.current_frame_index], self.current_frame_index)
 
 
 root = tk.Tk()
