@@ -28,7 +28,7 @@ def imu_data(path):
     try:
         data, _ = sock.recvfrom(1024)
         data_values = data.decode().split(',')
-        print(data_values)
+        # print(data_values)
 
         # Make sure the received data has all the required fields
         if len(data_values) == len(headers):
