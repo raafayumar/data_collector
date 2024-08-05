@@ -92,20 +92,20 @@ sl_no = 1  # Starting serial number
 
 # Create variables based on user inputs
 if road_condition == '0':
-    road_condition_text = "Good road"
+    road_condition_text = "Good"
 elif road_condition == '1':
-    road_condition_text = "Moderate road"
+    road_condition_text = "Moderate"
 elif road_condition == '2':
-    road_condition_text = "Bad road"
+    road_condition_text = "Bad"
 else:
     road_condition_text = "Unknown road condition"
 
 if traffic_condition == '0':
-    traffic_condition_text = "Mild traffic"
+    traffic_condition_text = "Mild"
 elif traffic_condition == '1':
-    traffic_condition_text = "Moderate traffic"
+    traffic_condition_text = "Moderate"
 elif traffic_condition == '2':
-    traffic_condition_text = "Heavy traffic"
+    traffic_condition_text = "Heavy"
 else:
     traffic_condition_text = "Unknown traffic condition"
 
@@ -318,7 +318,8 @@ def azure_data():
                 print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
                 comment = input('\n\nEnter Comments:')
                 device.close()
-                add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition, traffic_condition, disturbance, s_list)
+                add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition_text, traffic_condition_text,
+                                    disturbance, s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -327,7 +328,7 @@ def azure_data():
             print(time.time() - start_time)
             print(f'FPS: {fps}')
             comment = input('Enter Comments:')
-            add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition, traffic_condition, disturbance,
+            add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition_text, traffic_condition_text, disturbance,
                                 s_list)
             exit()
 
@@ -346,8 +347,8 @@ def record_audio(sample_rate=44100, channels=1):
     recorded_voice = sounddevice.rec(int(time_to_capture * sample_rate), samplerate=sample_rate, channels=channels)
     sounddevice.wait()
     write(output_file, sample_rate, recorded_voice)
-    add_comments_all('audio', 'mic', 'None', '0', time_to_capture, str(audio_data['bits']), road_condition,
-                     traffic_condition,
+    add_comments_all('audio', 'mic', 'None', '0', time_to_capture, str(audio_data['bits']), road_condition_text,
+                     traffic_condition_text,
                      disturbance)
 
 
@@ -376,7 +377,7 @@ def vayyar_data():
 
         if time.time() - start_time >= (0.25 * time_to_capture):
             vayyar_fps = frame_count / (time.time() - start_time)
-            add_comments_all('occupant', 'vayyar', 'None', vayyar_fps, time_to_capture, 'None', road_condition, traffic_condition,
+            add_comments_all('occupant', 'vayyar', 'None', vayyar_fps, time_to_capture, 'None', road_condition_text, traffic_condition_text,
                              disturbance)
             break
 
@@ -421,7 +422,7 @@ def dashcam():
 
         if time.time() - start_time >= time_to_capture:
             dash_fps = frame_count / (time.time() - start_time)
-            add_comments_all('dashcam', 'intel_rgb', 'None', dash_fps, time_to_capture, 'None', road_condition, traffic_condition,
+            add_comments_all('dashcam', 'intel_rgb', 'None', dash_fps, time_to_capture, 'None', road_condition_text, traffic_condition_text,
                              disturbance)
             break
 
@@ -447,9 +448,6 @@ def get_imu():
             break
 
 
-vayyar = threading.Thread(target=vayyar_data)
-vayyar.start()
-
 audio_data_capture = threading.Thread(target=record_audio)
 audio_data_capture.start()
 
@@ -461,3 +459,6 @@ dash_cam.start()
 
 imu = threading.Thread(target=get_imu)
 imu.start()
+
+vayyar = threading.Thread(target=vayyar_data)
+vayyar.start()
