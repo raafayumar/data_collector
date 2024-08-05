@@ -318,8 +318,7 @@ def azure_data():
                 print(f'Azure FPS: {fps}\nVayyar FPS: {vayyar_fps}\nDashcam FPS: {dash_fps}')
                 comment = input('\n\nEnter Comments:')
                 device.close()
-                add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition_text, traffic_condition_text,
-                                    disturbance, s_list)
+                add_comments_ir_rgb(comment, 'None', fps, time_to_capture, road_condition_text, traffic_condition_text, disturbance, s_list)
                 exit()
 
         # Stop when 'S' is pressed
@@ -377,7 +376,8 @@ def vayyar_data():
 
         if time.time() - start_time >= (0.25 * time_to_capture):
             vayyar_fps = frame_count / (time.time() - start_time)
-            add_comments_all('occupant', 'vayyar', 'None', vayyar_fps, time_to_capture, 'None', road_condition_text, traffic_condition_text,
+            add_comments_all('occupant', 'vayyar', 'None', vayyar_fps, time_to_capture, 'None',
+                             road_condition_text, traffic_condition_text,
                              disturbance)
             break
 
@@ -422,7 +422,8 @@ def dashcam():
 
         if time.time() - start_time >= time_to_capture:
             dash_fps = frame_count / (time.time() - start_time)
-            add_comments_all('dashcam', 'intel_rgb', 'None', dash_fps, time_to_capture, 'None', road_condition_text, traffic_condition_text,
+            add_comments_all('dashcam', 'intel_rgb', 'None', dash_fps, time_to_capture, 'None', road_condition_text,
+                             traffic_condition_text,
                              disturbance)
             break
 
