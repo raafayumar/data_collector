@@ -158,11 +158,18 @@ def getLux():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((UDP_IP, UDP_PORT))
     sock.setblocking(False)
+    previous_value = 0  # Initialize previous_value
 
     while True:
         try:
             lux, _ = sock.recvfrom(1024)
-            lux_values = int(lux.decode())
+            current_value = int(lux.decode())
+
+            if len(str(current_value)) > 5:
+                lux_values = previous_value  # Use previous value if current has more than 5 digits
+            else:
+                lux_values = current_value
+                previous_value = lux_values  # Update previous value
 
         except socket.error:
             pass
