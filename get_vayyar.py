@@ -106,10 +106,10 @@ def get_vayyar_data(path):
         frame_id += 1
         listener.send(json.dumps({'Type': 'QUERY', 'ID': 'BINARY_DATA'}))
 
-    if data['ID'] == 'GET_STATUS':
-        print(data['Payload']['status'])
-
-    return data['Payload']['Vayyar_InCarLsInSeat']
+    # if data['ID'] == 'GET_STATUS':
+    #     print(data['Payload']['status'])
+    #
+    # return data['Payload']['Vayyar_InCarLsInSeat']
 
 
 def save_to_csv(data, file_path):

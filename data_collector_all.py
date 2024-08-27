@@ -11,7 +11,6 @@
 
 
 """
-import initializer
 from initializer import initialize_details, file_constructor, ImageAnnotator, add_comments_ir_rgb, \
     get_audio_configuration, send_trigger, add_comments_all
 import os
@@ -26,24 +25,38 @@ import threading
 from rich.console import Console
 from rich.table import Table
 from open_application import check_application
+import argparse
+
+# Argument parser setup
+parser = argparse.ArgumentParser(description="Collect data using Azure RGB and IR.")
+parser.add_argument("--load_task", type=str, default='y', help="Load previous Task details? To continue press Y, To change press N")
+parser.add_argument("--load_details", type=str, default='y', help="Load previous subject details? To continue press Y, To change press N")
+parser.add_argument("--rotate", type=int, default=1, help="Set to 1 if rotation by 180 degrees is needed.")
+parser.add_argument("--annotations", type=int, default=0, help="Set this to 1 for annotations, 0 to continue data collection.")
+parser.add_argument("--subjects", type=int, default=1, help="Number of bounding boxes in one frame.")
+parser.add_argument("--time", type=int, default=120, help="Time to capture in seconds. If 0, use 'S' to stop the code.")
+parser.add_argument("audio", type=str, help="\nEnter recording details  (e.g., 1111): \nEngine mode 1: engine_on, 0: engine_off \nWindows     1: closed,    0: open \nMusic       1: music_on,  0: music_off \nNumber of occupants : 1 to 5 \nExample input: 1111 \n")
+parser.add_argument("road", type=str, default=1, help="Road condition: Good road (0), Moderate road (1), Bad road (2).")
+parser.add_argument("traffic", type=str, default=0, help="Traffic condition: Mild (0), Moderate (1), Heavy (2).")
+args = parser.parse_args()
 
 check_application()
 console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 1
+rotate_flag = args.rotate
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 0
+annotations_flag = args.annotations
 
 # number of bounding boxes in 1 frame.
-number_of_subjects = 1
+number_of_subjects = args.subjects
 
 # Replace with your actual class labels
 class_names = ['FOCUSED', 'SLEEPY', 'DISTRACTED']
 
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = int(input('\nPlease enter\nTime to capture in Seconds:'))
+time_to_capture = args.time
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -64,20 +77,21 @@ device = pykinect.start_device(config=device_config)
 sensor_1 = 'azure_ir'
 sensor_2 = 'azure_rgb'
 
-path_ir = initialize_details(sensor_1)
+path_ir = initialize_details(sensor_1, args.load_task, args.load_details)
+
 path_rgb = path_ir.replace(sensor_1, sensor_2)
 os.makedirs(path_rgb, exist_ok=True)
 
-audio_data = get_audio_configuration()
+audio_data = get_audio_configuration(args.audio)
 
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
 
 s_list = [sensor_1, sensor_2]
 
-road_condition = str(input('\nPlease select road condition.\nGood road:0, Moderate road:1, Bad road:2\n'))
+road_condition = args.road
 
-traffic_condition = str(input('\nPlease select traffic condition.\nMild:0, Moderate:1, Heavy:2\n'))
+traffic_condition = args.traffic
 
 disturbance = 'None'
 
@@ -386,7 +400,7 @@ def dashcam():
     global dash_fps
     # Initialize other RGB camera
     cam = cv2.VideoCapture(1)
-    cv2.namedWindow('INTEL Image', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Resized INTEL Image', cv2.WINDOW_NORMAL)
 
     path_intel = path_rgb.replace(sensor_2, 'intel_rgb').replace('driver_face', 'dashcam')
     os.makedirs(path_intel, exist_ok=True)
@@ -415,7 +429,10 @@ def dashcam():
 
         frame_count += 1
 
-        cv2.imshow('INTEL Image', intel)
+        resized_image = cv2.resize(intel, (640, 480))
+
+        # Display the resized image
+        cv2.imshow('Resized INTEL Image', resized_image)
 
         if cv2.waitKey(1) == ord('q'):
             break

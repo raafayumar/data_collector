@@ -193,7 +193,7 @@ def send_trigger():
         sock.sendto(esp_msg.encode(), (esp_ip, esp_port))
 
 
-def initialize_details(sensor_name=None):
+def initialize_details(sensor_name, task_ch, load_prev):
     global load_previous, task_choice, user_configuration, task_and_sensor_info
 
     # Check if the sensor_name is provided and in the predefined list
@@ -215,11 +215,11 @@ def initialize_details(sensor_name=None):
         with open(task_and_sensor_file, 'r') as f1:
             task_and_sensor_info = json.load(f1)
 
-            print(f'\nStart Data collection for Task: {task_and_sensor_info["task"]}\n'
-                  f'and using the sensor: {task_and_sensor_info["sensor"]}\n\n'
-                  f'To continue press Y, To change press N')
+            # print(f'\nStart Data collection for Task: {task_and_sensor_info["task"]}\n'
+            #       f'and using the sensor: {task_and_sensor_info["sensor"]}\n\n'
+            #       f'To continue press Y, To change press N')
 
-            task_choice = input().lower()
+            task_choice = task_ch
 
             if task_choice.lower() == 'y':
                 with open(task_and_sensor_file, 'r') as file_1:
@@ -255,10 +255,10 @@ def initialize_details(sensor_name=None):
         with open(details_file) as file:
             user_configuration = json.load(file)
 
-            print(f'\n\nSubject name: {user_configuration["name"]}\n'
-                  f'Spectacles: {user_configuration["spectacles"]}\n')
+            # print(f'\n\nSubject name: {user_configuration["name"]}\n'
+            #       f'Spectacles: {user_configuration["spectacles"]}\n')
 
-            load_previous = input('Do you want to load previous initialization details mentioned above? (y/n):\n')
+            load_previous = load_prev
 
         if load_previous.lower() == 'y':
             with open(details_file, 'r') as file:
@@ -512,7 +512,7 @@ def add_comments_ir_rgb(content, classes, fps, toc, road_condition, traffic_cond
                 time.sleep(0.1)
 
 
-def get_audio_configuration():
+def get_audio_configuration(audio_bits):
     prompt = (
         '\nEnter recording details  (e.g., 1111): \n'
         ' Engine mode 1: engine_on, 0: engine_off \n'
@@ -524,9 +524,10 @@ def get_audio_configuration():
 
     valid_input_first_three = ['0', '1']
     valid_input_last = ['1', '2', '3', '4', '5']
+    print('audio:', audio_bits)
 
     while True:
-        audio_bit_user_input = input(prompt)
+        audio_bit_user_input = audio_bits
         if (
                 len(audio_bit_user_input) == 4 and
                 all(bit in valid_input_first_three for bit in audio_bit_user_input[:3]) and
