@@ -222,6 +222,8 @@ def initialize_details(sensor_name, task_ch, load_prev):
             task_choice = task_ch
 
             if task_choice.lower() == 'y':
+                print(f'\nStart Data collection for Task: {task_and_sensor_info["task"]}\n'
+                      f'and using the sensor: {task_and_sensor_info["sensor"]}\n\n')
                 with open(task_and_sensor_file, 'r') as file_1:
                     task_and_sensor_info = json.load(file_1)
 
@@ -261,6 +263,9 @@ def initialize_details(sensor_name, task_ch, load_prev):
             load_previous = load_prev
 
         if load_previous.lower() == 'y':
+            print(f'\n\nSubject name: {user_configuration["name"]}\n'
+                  f'Spectacles: {user_configuration["spectacles"]}\n')
+            time.sleep(2)
             with open(details_file, 'r') as file:
                 user_configuration = json.load(file)
         else:
@@ -524,7 +529,6 @@ def get_audio_configuration(audio_bits):
 
     valid_input_first_three = ['0', '1']
     valid_input_last = ['1', '2', '3', '4', '5']
-    print('audio:', audio_bits)
 
     while True:
         audio_bit_user_input = audio_bits
