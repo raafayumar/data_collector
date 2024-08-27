@@ -21,20 +21,31 @@ import numpy as np
 import threading
 from rich.console import Console
 from rich.table import Table
+import argparse
+
+# Argument parser setup
+parser = argparse.ArgumentParser(description="Collect data using Azure RGB and IR.")
+parser.add_argument("--load_task", type=str, default='y', help="Load previous Task details? To continue press Y, To change press N")
+parser.add_argument("--load_details", type=str, default='y', help="Load previous subject details? To continue press Y, To change press N")
+parser.add_argument("--rotate", type=int, default=1, help="Set to 1 if rotation by 180 degrees is needed.")
+parser.add_argument("--annotations", type=int, default=0, help="Set this to 1 for annotations, 0 to continue data collection.")
+parser.add_argument("--subjects", type=int, default=1, help="Number of bounding boxes in one frame.")
+parser.add_argument("--time", type=int, default=10, help="Time to capture in seconds. If 0, use 'S' to stop the code.")
+args = parser.parse_args()
 
 console = Console()
 
 # Set to 1 if rotation by 180 degree is needed.
-rotate_flag = 1
+rotate_flag = args.rotate
 
 # Set this to 1 for annotations, if 0 the data collection continues
-annotations_flag = 1
+annotations_flag = args.annotations
 
 # number of bounding boxes in 1 frame.
-number_of_subjects = 2
+number_of_subjects = args.time
 
 # Time in sec, if 0 then use 'S' to stop the code
-time_to_capture = int(input('\nPlease enter\nTime to capture in Seconds:'))
+time_to_capture = args.time
 
 # Change file_extension, to 'npy' to save raw data
 file_extension = 'jpeg'
@@ -55,8 +66,10 @@ device = pykinect.start_device(config=device_config)
 sensor_1 = 'azure_ir'
 sensor_2 = 'azure_rgb'
 
-path_ir = initialize_details(sensor_1)
+conditions = '0000'
+classes = '0000'
 
+path_ir = initialize_details(sensor_1, args.load_task, args.load_details)
 path_rgb = path_ir.replace(sensor_1, sensor_2)
 os.makedirs(path_rgb, exist_ok=True)
 
@@ -177,7 +190,7 @@ def azure_data():
         ir_image = ir_image.astype(np.int32)
 
         # get the constructed file name, with lux values for Azure IR
-        name_i = file_constructor()
+        name_i = file_constructor(conditions, classes)
         path_i = os.path.join(path_ir, name_i)
 
         # construct the final file name
