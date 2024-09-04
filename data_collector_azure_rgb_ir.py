@@ -42,7 +42,7 @@ rotate_flag = args.rotate
 annotations_flag = args.annotations
 
 # number of bounding boxes in 1 frame.
-number_of_subjects = args.time
+number_of_subjects = args.subjects
 
 # Time in sec, if 0 then use 'S' to stop the code
 time_to_capture = args.time
@@ -66,8 +66,8 @@ device = pykinect.start_device(config=device_config)
 sensor_1 = 'azure_ir'
 sensor_2 = 'azure_rgb'
 
-conditions = '0000'
-classes = '0000'
+conditions = 0
+classes = 0
 
 path_ir = initialize_details(sensor_1, args.load_task, args.load_details)
 path_rgb = path_ir.replace(sensor_1, sensor_2)
