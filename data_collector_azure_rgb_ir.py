@@ -170,7 +170,7 @@ def azure_data():
     frame_count = 0
     class_num = 'None'
     cv2.namedWindow('IR Image', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('RGB Image', cv2.WINDOW_NORMAL)
     sl_no = 1
     start_time = time.time()  # set timer
     while True:
@@ -249,7 +249,7 @@ def azure_data():
         # call convertScaleAbs function, just for visualisation
         adjusted_ir = cv2.convertScaleAbs(ir_image, alpha=alpha, beta=beta)
         cv2.imshow('IR Image', adjusted_ir)
-        cv2.imshow('RGB Image', rgb_image)
+        # cv2.imshow('RGB Image', rgb_image)
 
         threading.Thread(target=save_image, args=(data_i, adjusted_ir)).start()
         threading.Thread(target=save_image, args=(data_r, rgb_image)).start()
