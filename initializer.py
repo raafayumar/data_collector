@@ -168,7 +168,8 @@ def getLux():
             if len(str(current_value)) > 5:
                 lux_values = previous_value  # Use previous value if current has more than 5 digits
             else:
-                lux_values = current_value
+                # Cap the lux value at 3000
+                lux_values = min(current_value, 3000)
                 previous_value = lux_values  # Update previous value
 
         except socket.error:
