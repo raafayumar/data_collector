@@ -76,7 +76,7 @@ os.makedirs(path_rgb, exist_ok=True)
 alpha = 0.2  # Contrast control
 beta = 0.09  # Brightness control
 
-temp = path_ir.split('\\')
+temp = path_ir.split(str(os.sep))
 task = temp[temp.index('datafolder') + 1]
 
 if task == 'driver_face':
